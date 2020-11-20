@@ -1,0 +1,4 @@
+#define VERSION 'SAB_COR 1.07'
+#define INP_FILENAME_LEN 20
+#define MAX_SYMS 20
+#define AVOGADRO 6.02252e23

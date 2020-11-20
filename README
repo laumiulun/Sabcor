@@ -1,0 +1,90 @@
+You should be able to just unpack it, type make, and then
+to test it, type:
+
+sabcor example.dat
+
+The output onto the screen should look like:
+---------------------
+[chbooth@hahn stand_alone]$ sabcor example.dat
+ Welcome to SAB_COR 1.05.
+
+Outputting self-absorption correction to sab_cor.dat
+
+ Self-Absorption correction statistics:
+
+info depth at 5 inv ang:                   24885.0 Angstroms
+correction chi_true/chi_exp at 5 inv ang:   1.93
+
+writing out file example_sac.dat
+[chbooth@hahn stand_alone]$
+---------------------
+
+Compare this with the contents of "example_sac_orig.dat".
+
+The input parameters are in a file called "sab.inp" and are fairly
+self-explanatory.  The input file should be
+in k-space, and the ascii file should have two columns: k in inverse
+angstroms, and k*chi_exp.  The reason for the k-weighting is historical
+(all our other codes assume it).
+
+Another important point is that when you apply the correction to
+chi_exp, it is important that you have a good "pre-edge" background
+removal.  In particular, DO NOT USE A VICTOREEN-type subtraction:  the
+fall-off of the fluorescence yield data with energy does not in general
+follow the actual absorption because of the self-absorption effect.  See
+Troger et al. for a good figure demonstrating this aspect. If you have a
+good energy discriminator, such as from a Ge detector, you likely have
+only a small offset to your fluorescence data, so you should just
+subtract a constant from I_f.  Sometimes a more severe background must
+be removed, so just be careful to maintain the overal character of how
+the I_f changes with energy, e.g., if I_f is increasing with energy,
+don't use a pre-edge background that forces it to decrease.  If you have
+a bad background, you will affect the higher-k data, mostly likely
+causing your fits to have mean-squared displacement parameters
+(Debye-Waller) that are too small.
+
+See the file sabcor.F for some info in the comments. 
+Otherwise, let me know if you have any troubles or questions. 
+Eventually, I'll write a short manual.
+
+Please let me know how it goes!
+
+Other notes
+-----------
+
+There is a recent mac build (Thanks Dan Olive!), and executables and example output are in the main source directory. Type "ls *mac*" to get the idea.
+
+---------------------------------------------------------------------------
+Francois Farges notes that the makefile doesn't work for FreeBSD/MacOS X.
+Here is his suggestion:
+
+MacOS X instructions
+Requires Absoft Fortran
+Successfully tested on Absoft on 10.2.6
+
+To compile, just type this at the prompt, inside the sabcor folder :
+
+f77 -f -N15 -O2 -o sabcor -lU77  mod_mucal.f num_fields.f aexfile_in.F exfile_in.F file_ascii.F sabcor.F aexfile_out.F exfile_info.F readinp.F tit2ascii.F atomic_sub.F exfile_out.F sab_sub.F
+
+(it takes a while to optimize - otherwise don't use -O2)
+---------------------------------------------------------------------------
+
+Dan Olive has recently (8/15/13) installed on a mac:
+
+For anyone else interested in compiling sabcor on their machines:
+
+1) Download and install gfortran and gcc from:
+
+ http://gcc.gnu.org/wiki/GFortranBinaries
+
+This particular version was gfortran-and-gcc-4-6-2-RC20111019-Sno-x86-64.dmg (The previous mac version of sabcor used the commercial Absoft Fortran.)
+
+2) Change your path environment variable to use gcc that came with the above package. For example by typing
+
+PATH=/usr/local/gfortran/bin:$PATH
+
+into your shell. XCode, fink, macports, etc... all install their own version, if a different gcc is called at compile time unlinkable files shall be the only thing produced.
+
+3) Finally, run the following command:
+
+/usr/local/gfortran/bin/gfortran -x f77-cpp-input -ffixed-line-length-132 -fno-automatic -g -O2 -v mod_mucal.f num_fields.f aexfile_in.F exfile_in.F file_ascii.F sabcor.F aexfile_out.F readinp.F tit2ascii.F exfile_out.F sab_sub.F spline.F splint.f atomic_sub.F get_type.F getexfilename.F read_feff_header.F -o sabcormac

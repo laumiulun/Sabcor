@@ -1,0 +1,52 @@
+TARGET=sabcor
+#Assume f77 is g77
+ifeq ($(F77),f77)
+        F77=g77
+endif
+ifeq ($(F77),g77)
+        F2OFLAGS= -c -ffixed-line-length-132 -fno-automatic
+        LDFLAGS= -O -fbounds-check
+endif
+ifeq ($(F77),gfortran)
+        F2OFLAGS= -c -ffixed-line-length-132 -fno-automatic -g
+        LDFLAGS= -O2
+endif
+
+
+LFLAGS=-O
+FLAGS= -ffixed-line-length-132 -fno-automatic 
+
+INCLUDE=./
+
+OBJCTS = \
+sabcor.o \
+readinp.o \
+aexfile_in.o \
+aexfile_out.o \
+file_ascii.o \
+atomic_sub.o \
+exfile_in.o \
+exfile_out.o \
+getexfilename.o \
+get_type.o \
+tit2ascii.o \
+mod_mucal.o \
+num_fields.o \
+read_feff_header.o \
+sab_sub.o \
+spline.o \
+splint.o \
+stringlen.o \
+
+
+$(TARGET): $(OBJCTS) makefile
+	$(F77) -o $(TARGET) $(OBJCTS)
+
+clean:
+	rm -f *.o $(TARGET)
+
+.f.o: 
+	$(F77) -I$(INCLUDE) $(FLAGS) -c $< 
+
+.F.o: 
+	$(F77) -I$(INCLUDE) $(FLAGS) -c $< 
