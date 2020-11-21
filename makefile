@@ -1,31 +1,26 @@
-CXX = g++ -std=c++11
-FXX = gfortran
+FXX = gfortran -std=legacy
+OBJ_DIR := obj
 SRC_DIR := src
 BIN_DIR := bin
-OBJ_DIR := obj
-SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
-OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
-LDFLAGS :=
-CPPFLAGS :=
-CXXFLAGS := -I include -Wall
-FFLAGS := -ffixed-line-length-132 -fno-automatic 
+# Contain all src files in
+SRC_FILES := $(wildcard $(SRC_DIR)/*.F)
+OBJ_FILES := $(patsubst $(SRC_DIR)/%.F,$(OBJ_DIR)/%.o,$(SRC_FILES))
+FPPFLAGS :=
+FXXFLAGS := -ffixed-line-length-132  -fno-automatic -g
+LDFLAGS := -O2
 
+all: dir sabcor
 
-
-all: dir sabor
 dir:
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(OBJ_DIR)
 
-sabor: $(OBJ_FILES)
-	#$(CXX) $(LDFLAGS) -o $(BIN_DIR)/$@ $^
-	$(FXX) $(FFLAGS) -o $(BIN_DIR)/$@ $^
+sabcor: $(OBJ_FILES)
+	$(FXX) $(LDFLAGS) -o $(BIN_DIR)/$@ $^
 
-#$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-#	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.F
+	$(FXX) $(FPPFLAGS) $(FXXFLAGS) -c -o $@ $<
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.f
-	$(FXX) $(
 
 .PHONY: clean
 
