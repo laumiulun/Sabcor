@@ -197,6 +197,8 @@ c*******************************************************************************
 c*******************************************************************************
 	real function get_tot_abs(formula,energy,edge,formvol)
 c
+c	No longer uses edge, should just eliminate
+c	
 c	Returns absorption in inverse cm.
 c
 c*******************************************************************************
@@ -282,6 +284,8 @@ c*******************************************************************************
 c*******************************************************************************
 	real function get_noedge_abs(formula,energy,edge,formvol)
 c
+c	No longer uses edge, should just eliminate
+c	
 c	Returns absorption in inverse cm, MINUS the current absorption edge.
 c	Nearly a copy of get_tot_abs.
 c

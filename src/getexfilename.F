@@ -18,7 +18,7 @@ c******************************************************************************
 
 	common /io/sub_dir
 
-	print *,' '
+	!print *,' '
 c	First check command line.  If a filename exists
 c	there, use that.
 c
