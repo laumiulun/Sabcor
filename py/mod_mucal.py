@@ -1,4 +1,6 @@
+# I only see mucal(en,mane,z,unit,xsec,energy,fly,erf,er) subroutine called in sab_sub.F
 
+# subroutine mucal(en,mane,z,unit,xsec,energy,fly,erf,er)
 
 class elements():
     #em starts at S (16) it seems, what should the 1st 15 be?
@@ -871,8 +873,6 @@ Am.an = [14.8535, -1.87733,  0.0, 0.0]
 Am.coh = [8.38174,  0.47708500, -0.36655600,  0.0173422]
 Am.cih = [0.0388791, 1.82229, -0.27609900,  0.0107392]
 Am.fel = [0.20500000, 0.46400000, 0.514000]
-
-
 """ #name, ek, el, ak, al, am, an, den, cf, atwt, coh, cih, ka, kb, la, lb, em
 Am.ak = []
 Am.al = []
@@ -882,14 +882,45 @@ Am.coh = []
 Am.cih = []
 
 Do not have
- "Po", "At" (84, 85), "Fr", "Ra", "Ac" (87-89), "Pa" (91), "Np" (93), "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og" (96-118) 
+ "Po", "At" (84, 85), "Fr", "Ra", "Ac" (87-89), "Pa" (91), "Np" (93), 
+ "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", 
+ "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og" (96-118) 
 """
+##################################################### 
+################# program starts ####################
+#####################################################
+"""
+ The structure of the Fortran code is as such:
+ 1) error messages for z= 84, 85, 87-89, 91, 93, >95 & mane = "Po", "At", etc corresponding to z values
+ 2) error message for zero energy value
+ 3) initialize int values?: 
+      bsum=0
+      belowsum=0.0
+      sum=0
+      sumbelow=0.0
+      chs=0
+      csum=0
+      cis=0
+      cisum=0
+ 4) compared e and ek, e and el, e and em
+ 5) finally calculate something with e, bsum, al, belowsum, am, sum, sumbelow, bax, ba_noedge_x
+"""
+#def mucal(en,mane,z,unit,xsec,energy,fly,erf,er): can I just get rid of the inclusion of both mane and z? Or is there a purpose to this redundance
+def mucal(z):
+    # name checking, for now just print the element corresponding to z
+    if (z < 95):
+        print("Is ", elements.name, "the element you're trying to work with?") #well, z is not connected to class instances yet. Writing if (z = 1): H.name, if (z = 2): He.name, etc would be a terribly inefficient way to do this right?
+        if ():
+            mucal(z)
+        else:
+            print("ok great")
+    else:
+        print("No, try something between 1-94")
+    
 
-#start recreating functions
 """
-# "call upcase(mane)" ...guess is it's a function?
+# "call upcase(mane)" ...guess is it's a function? I think "mane" is a typo for name?
 try:
-	#whatever the python eqvlt to "call upcase(mane)" will be
 	if z = 84 or z = 85 or z = 87 or z = 88 or z = 89 or z = 91 or z = 93:
 		raise UnAcceptedValueError("sorry no documents for Z=84,85,87-89,91,93")
     #UnAcceptedValueError is from a tutorial example copy/pasted in the comment below
@@ -906,6 +937,7 @@ if(z.eq.84.or.z.eq.85.or.z.eq.87.or.z.eq.88.or.z.eq.89.or.
      $        print*,'**sorry no documents for Z=84,85,87-89,91,93**'
          goto 10001
 
+#################################################################
 Exception handling Python: Python Custom Exceptions example from tutorial
 https://www.datacamp.com/community/tutorials/exception-handling-python
 class UnAcceptedValueError(Exception):   
