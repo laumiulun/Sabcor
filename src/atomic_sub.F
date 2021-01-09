@@ -18,7 +18,7 @@ c*****************************************************************************
 	character*2 periodic_table(MAX_Z)
 	data periodic_table/'H ','He','Li','Be','B ','C ','N ',
      &			'O ','F ','Ne','Na','Mg','Al','Si','P ','S ','Cl',
-     &			'A ','K ','Ca','Sc','Ti','V ','Cr','Mn','Fe','Co',
+     &			'Ar','K ','Ca','Sc','Ti','V ','Cr','Mn','Fe','Co',
      &			'Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr','Rb',
      &			'Sr','Y ','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag',
      &			'Cd','In','Sn','Sb','Te','I ','Xe','Cs','Ba','La',
@@ -247,11 +247,11 @@ c***********************************************************************
 	Z=sym2Z(Zsym)
 	if(edge_sym.eq.'K   ') then
 		edge_code=0
-	elseif(edge_sym.eq.'LI  ') then
+	elseif(edge_sym.eq.'LI  '.or.edge_sym.eq.'L1  ') then
 		edge_code=1
-	elseif(edge_sym.eq.'LII ') then
+	elseif(edge_sym.eq.'LII '.or.edge_sym.eq.'L2  ') then
 		edge_code=2
-	elseif(edge_sym.eq.'LIII') then
+	elseif(edge_sym.eq.'LIII'.or.edge_sym.eq.'L3  ') then
 		edge_code=3
 	else
 		print *,'ERROR:get_atomic. symbol bad: ',Zsym,',',edge_sym
@@ -386,7 +386,9 @@ c
 *		print *,'Attempting to fix symbol: ',string
 	endif
 	if ((string(4:7).ne.'K   ').and.(string(4:7).ne.'LI  ').and.
-     &		(string(4:7).ne.'LII ').and.(string(4:7).ne.'LIII'))
+     &		(string(4:7).ne.'LII ').and.(string(4:7).ne.'LIII').and.
+     &		(string(4:7).ne.'L1  ').and.(string(4:7).ne.'L2  ').and.
+     &		(string(4:7).ne.'L3  '))
      &		then ierror=1
 
 

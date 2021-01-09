@@ -22,7 +22,7 @@ c	Last modifies: 5/10/95 CB
 c************************************************************************
 
 	character*TIT_LEN title(MAX_TIT),tit_temp
-	character*FILENAME_LEN filename
+	character filename*(*)
 	real x(MAX_NX),f1(MAX_NX),f2(MAX_NX),f3(MAX_NX)
 	real dx,xi
 	integer nf,nx,nx1,nx2,ntit,access

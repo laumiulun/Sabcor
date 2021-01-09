@@ -102,8 +102,8 @@ c
 	elseif(ascii_line(1:8).eq.'FORMULA ') then
 		read(ascii_line(9:80),*) formula
 	elseif(ascii_line(1:5).eq.'EDGE ') then
-		read(ascii_line(6:80),'(a6)') edge
-	elseif(ascii_line(1:6).eq.'FLUOR ') then
+		read(ascii_line(6:80),'(a7)') edge !fixed so it doesn't
+	elseif(ascii_line(1:6).eq.'FLUOR ') then !cpip  LIII edges, DTO
 		read(ascii_line(7:80),*) fluor_energy
 	elseif(ascii_line(1:14).eq.'CONCENTRATION ') then
 		read(ascii_line(15:80),*) concentration
