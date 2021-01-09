@@ -40,6 +40,7 @@ H.coh = [-0.119075, -0.937086, -0.200538, 0.0106587]
 H.cih = [-2.15772, 1.32685, -0.305620, 0.0185025]
 H.fek = []
 H.fel = []
+H.element_num = 1
 
 print("name:", H.name, "ek:", H.ek, "ak:", H.ak, "cih:", H.cih)    #yay it works
 
@@ -51,6 +52,7 @@ He.an = [0, 0, 0, 0]
 He.coh = [1.04768, -0.0851805, -0.403527, 0.0269398]
 He.cih = [-2.56357,  2.02536, -0.448710,  0.0279691]
 He.fel = []
+He.element_num = 2
 
 Li = elements("Li", 0.0550000,  0.0, [], [], [], [], 0.534, 11.5200, 6.940, [], [], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, [], [])
 Li.ak = [7.75370, -2.81801, -0.241378,  0.0262542]
@@ -59,6 +61,7 @@ Li.am = [0, 0, 0, 0]
 Li.an = [0, 0, 0, 0]
 Li.coh = [1.34366,  0.181557, -0.423981,  0.0266190]
 Li.cih = [-1.08740, 1.03368, -0.190377,  0.00779955]
+Li.element_num = 3
 
 Be = elements("Be", 0.112, 0.0, [], [], [], [], 1.848, 14.96, 9.012, [], [], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, [], [])
 Be.ak = [9.04511, -2.83487, -0.210021,  0.0229526]
@@ -873,6 +876,7 @@ Am.an = [14.8535, -1.87733,  0.0, 0.0]
 Am.coh = [8.38174,  0.47708500, -0.36655600,  0.0173422]
 Am.cih = [0.0388791, 1.82229, -0.27609900,  0.0107392]
 Am.fel = [0.20500000, 0.46400000, 0.514000]
+Am.element_num = 95
 """ #name, ek, el, ak, al, am, an, den, cf, atwt, coh, cih, ka, kb, la, lb, em
 Am.ak = []
 Am.al = []
@@ -905,24 +909,21 @@ Do not have
  4) compared e and ek, e and el, e and em
  5) finally calculate something with e, bsum, al, belowsum, am, sum, sumbelow, bax, ba_noedge_x
 """
-#def mucal(en,mane,z,unit,xsec,energy,fly,erf,er): can I just get rid of the inclusion of both mane and z? Or is there a purpose to this redundance
-def mucal(z):
-    # name checking, for now just print the element corresponding to z
-    if (z < 95):
-        print("Is ", elements.name, "the element you're trying to work with?") #well, z is not connected to class instances yet. Writing if (z = 1): H.name, if (z = 2): He.name, etc would be a terribly inefficient way to do this right?
-        if ():
-            mucal(z)
-        else:
-            print("ok great")
-    else:
-        print("No, try something between 1-94")
+def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
     
+    if z.element_number == 84 or 85 or 87 or 88 or 89 or 91 or 93:
+      er = 3 
+      raise Exception("Print no doucmentation for z = 84, 85, 87-89, 91, 93")
+
+    elif:
+      z.element_name == 'Po' or 'At' or 'Fr' or 'Ra' or 'Ac' or 'Pa' or 'Np' or 'Cm' or 'Bk' or 'Cf' or 'Es'  or 'Fm' or 'Md' or 'No' or 'Lr' or 'Rf' or 'Db' or 'Sg' or 'Bh' or 'Hs' or 'Mt' or 'Ds' or 'Rg' or 'Cn' or 'Nh' or 'Fl' or 'Mc' or 'Lv' or 'Ts' or 'Og'
+      er = 3
+      raise Exception
+
 
 """
-# "call upcase(mane)" ...guess is it's a function? I think "mane" is a typo for name?
-try:
-	if z = 84 or z = 85 or z = 87 or z = 88 or z = 89 or z = 91 or z = 93:
-		raise UnAcceptedValueError("sorry no documents for Z=84,85,87-89,91,93")
+# "call upcase(mane)" ...guess is it's a function? I think "mane
+
     #UnAcceptedValueError is from a tutorial example copy/pasted in the comment below
 except UnAcceptedValueError as e: 
 	print ("Received error:", e.data)
