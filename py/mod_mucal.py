@@ -1,6 +1,6 @@
+import math
 # I only see mucal(en,mane,z,unit,xsec,energy,fly,erf,er) subroutine called in sab_sub.F
 
-# subroutine mucal(en,mane,z,unit,xsec,energy,fly,erf,er)
 
 class elements():
     #em starts at S (16) it seems, what should the 1st 15 be?
@@ -947,10 +947,10 @@ Do not have
  The structure of the Fortran code is as such:
  1) error messages for z= 84, 85, 87-89, 91, 93, >95 & mane = "Po", "At", etc corresponding to z values
  2) error message for zero energy value
- 3) initialize int values?: 
+ 3) initialize int and floar values?: 
       bsum=0
       belowsum=0.0
-      sum=0
+      sum=0     # <- This 'sum' is replaced with 'summ' since 'sum' is a function in Python
       sumbelow=0.0
       chs=0
       csum=0
@@ -971,36 +971,85 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
       raise Exception"""
 
     if z == 84 or 85 or 87 or 88 or 89 or 91 or 93:
+        er = 3
         print("no doc for z = 84, 85, 87-89, 91, 93")
-    
+            
     elif mane == Po or At or Fr or Ra or Ac or Pa or Np:
+        er = 3
         print("no doc for mane = Po, At, Fr, Ra, Ac, Pa, Np")
+    
+    elif z > 94:
+        er = 4
+        print("no doc for z > 94")
 
-    elif  z != mane.num: #this assumes 'mane' in the form of a class, not a string variable
-        print('no, it is the wrong number for that element')
+    elif  z != mane.num: #this assumes 'mane' in the form of a class, not a string
+        er = 2
+        print('no, z is the wrong number for that element')
     
     else:
         elm = mane.name
-        print(elm, " is an excellent choice")
-        #the actual code for calculations
+        print(elm, "is an excellent choice")
+        if en == 0:
+            print("can't calculate zero energy")
+        else:
+            e = en
+            if e < mane.ek and e > mane.ek-0.001:
+                print("goto 39")
+                er = 6
+            else:
+                print("goto 38")
+                #38
+                if e > mane.ek:
+                    print("debug in mucal: a K edge", e ) #goto 70
+            ###70   do 400 i=0,3	! a K edge
+            #             bsum=ak(i,n)*(log(e))**i
+            #             belowsum=al(i,n)*(log(e))**i
+            #           sum=sum+bsum
+	        #           sumbelow=sumbelow+belowsum
+            #  400  continue
+            #       goto 80
+            #  80   bax=exp(sum)
+            #       ba_noedge_x=exp(sumbelow)
+            #c----------------------------------------------------------------+
+            #c     correct for l-edges since mcmaster uses l1-edge            |
+            #c     use edge jumps for correct x-sections                      |
+            #c----------------------------------------------------------------+
+            #       if(e.ge.l3(n).and.e.lt.l2(n)) then
+            #!	            L3 edge, correct for L1 in bax, just use M for noedge
+		    #               bax=bax/(lj1*lj2)
+            #       endif
+            #       if(e.ge.l2(n).and.e.lt.el(n)) then
+            #!          L2 edge, correct for L1 in bax, noedge using L3
+            #           ba_noedge_x=bax/(lj1*lj2) !must do in this order
+            #           bax=bax/lj1 !or else bax gets corrected twice
+            #       endif
+            #       if(e.ge.el(n).and.e.lt.ek(n)) then
+            #!          L1 edge, bax is correct, noedge using L2
+            #           ba_noedge_x=bax/lj1
+            #       endif
+            #       
+                    for i in range(len(mane.ak)):
+                        bsum = mane.ak[i]*(math.log(e))**i
+                        belowsum = mane.al[i]*(math.log(e))**i
+                        #what's with the indent in the fortran code
+                        summ = summ + bsum              #sum is a function in python so it is replaced here with two m's
+                        sumbelow = sumbelow + belowsum
+                        #work on 400 and 80
+
+                else:
+                    print("not sure if anything is supposed to happen here")
 
 
 """
-# "call upcase(mane)" ...guess is it's a function? I think "mane
-
-    #UnAcceptedValueError is from a tutorial example copy/pasted in the comment below
-except UnAcceptedValueError as e: 
-	print ("Received error:", e.data)
-"""
-
-"""
-first if statement with error message from original mod_mucal.f
-if(z.eq.84.or.z.eq.85.or.z.eq.87.or.z.eq.88.or.z.eq.89.or.
-     $     z.eq.91.or.z.eq.93) then
-         er=3
-         if(erf) 
-     $        print*,'**sorry no documents for Z=84,85,87-89,91,93**'
-         goto 10001
+c     error codes:                                                     |
+c     er=1: energy input is zero                                       |
+c     er=2: name does not match                                        |
+c     er=3: no documentation for given element (z<94)                  |
+c     er=4: no documentation for given element (z>94)                  |
+c     er=5: l-edge calculation may be wrong for z<30 as mcmaster       |
+c     uses l1 only.                                                    |
+c     er=6: energy at the middle of edge                               |
+c     er=7: no name or z supplied                                      |
 
 #################################################################
 Exception handling Python: Python Custom Exceptions example from tutorial
