@@ -1,6 +1,7 @@
 import math
 # I only see mucal(en,mane,z,unit,xsec,energy,fly,erf,er) subroutine called in sab_sub.F
 
+#copy and find "do 400, I'm not sure if 400 & 80 are part of this for loop or after"
 
 class elements():
     #em starts at S (16) it seems, what should the 1st 15 be?
@@ -981,7 +982,7 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
     elif z > 94:
         er = 4
         print("no doc for z > 94")
-
+    #11
     elif  z != mane.num: #this assumes 'mane' in the form of a class, not a string
         er = 2
         print('no, z is the wrong number for that element')
@@ -989,55 +990,69 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
     else:
         elm = mane.name
         print(elm, "is an excellent choice")
+        #20
         if en == 0:
             print("can't calculate zero energy")
         else:
             e = en
             if e < mane.ek and e > mane.ek-0.001:
-                print("goto 39")
+                #goto 39
                 er = 6
+                #if (erf) print print*,'**energy at the middle of edge using pre-edge fit results may be wrong**'
+
             else:
-                print("goto 38")
-                #38
+                #goto 38
+                #38 - selecting correct range
                 if e > mane.ek:
                     print("debug in mucal: a K edge", e ) #goto 70
-            ###70   do 400 i=0,3	! a K edge
-            #             bsum=ak(i,n)*(log(e))**i
-            #             belowsum=al(i,n)*(log(e))**i
-            #           sum=sum+bsum
-	        #           sumbelow=sumbelow+belowsum
-            #  400  continue
-            #       goto 80
-            #  80   bax=exp(sum)
-            #       ba_noedge_x=exp(sumbelow)
-            #c----------------------------------------------------------------+
-            #c     correct for l-edges since mcmaster uses l1-edge            |
-            #c     use edge jumps for correct x-sections                      |
-            #c----------------------------------------------------------------+
-            #       if(e.ge.l3(n).and.e.lt.l2(n)) then
-            #!	            L3 edge, correct for L1 in bax, just use M for noedge
-		    #               bax=bax/(lj1*lj2)
-            #       endif
-            #       if(e.ge.l2(n).and.e.lt.el(n)) then
-            #!          L2 edge, correct for L1 in bax, noedge using L3
-            #           ba_noedge_x=bax/(lj1*lj2) !must do in this order
-            #           bax=bax/lj1 !or else bax gets corrected twice
-            #       endif
-            #       if(e.ge.el(n).and.e.lt.ek(n)) then
-            #!          L1 edge, bax is correct, noedge using L2
-            #           ba_noedge_x=bax/lj1
-            #       endif
-            #       
-                    for i in range(len(mane.ak)):
+                    #70
+                    for i in range(len(mane.ak)): #do 400, I'm not sure if 400 & 80 are part of this for loop or after
                         bsum = mane.ak[i]*(math.log(e))**i
                         belowsum = mane.al[i]*(math.log(e))**i
                         #what's with the indent in the fortran code
                         summ = summ + bsum              #sum is a function in python so it is replaced here with two m's
                         sumbelow = sumbelow + belowsum
-                        #work on 400 and 80
+                    #400 continue /n end
+                    #80                    
+                    bax = math.exp(summ)
+                    ba_noedge_x = math.exp(sumbelow)
+                    
+                    if (e > mane.l3 and e < mane.l2):
+                        #L3 edge, correct for L1 in bax, just use M for noedge
+                        bax=bax/(lj1*lj2)
+                    else:
+                        pass
+
+                    if (e > mane.l2 and e < mane.el): 
+                        #L2 edge, correct for L1 in bax, noedge using L3
+                        ba_noedge_x = bax/(lj1*lj2) #must do in this order
+                        bax=bax/lj1 #or else bax gets corrected twice
+                    else:
+                        pass
+                    
+                    if (e > mane.el and e < mane.ek):
+                        #L1 edge, bax is correct, noedge using L2
+                        ba_noedge_x=bax/lj1
+                    else:
+                        pass
+                    #Does it just go to 89 after 80 no matter what?
+                    #89 goes after many things so there should be a function for it
+                    #89 do 90 i = 0,3
+                    for i in range(len(mane.coh)):
+                        csum = mane.coh[i]*(math.log(e))**i
+                        chs = chs + csum
+                    #90 continue
+                    bcox = math.exp(chs)
+                    for i in range(len(mane.cih)): #do 500
+                        cisum = mane.cih[i]*(math.log(e))**i
+                        cis = cis + cisum
+                    #500 continue
+                    binx = math.exp(cis)
+                    btox = bax + bcox + binx
+                    bto_noedge_x = ba_noedge_x + bcox+binx
 
                 else:
-                    print("not sure if anything is supposed to happen here")
+                    print("")
 
 
 """
