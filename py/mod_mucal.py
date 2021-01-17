@@ -961,16 +961,29 @@ Do not have
  5) finally calculate something with e, bsum, al, belowsum, am, sum, sumbelow, bax, ba_noedge_x
 """
 def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
-    
-    """if z.element_num == 84 or 85 or 87 or 88 or 89 or 91 or 93:
-      er = 3 
-      raise Exception("Print no doucmentation for z = 84, 85, 87-89, 91, 93")
+    #nested function
+    def fortranLineEighty(): #80
+        mane.bax = math.exp(summ)               #appends bax attribute
+        mane.ba_noedge_x = math.exp(sumbelow)   #appends ba_noedge_x attribute
+        if (e > mane.l3 and e < mane.l2):
+        #L3 edge, correct for L1 in bax, just use M for noedge
+            mane.bax = mane.bax/(lj1*lj2)
+        else:
+            pass
+        if (e > mane.l2 and e < mane.el): 
+        #L2 edge, correct for L1 in bax, noedge using L3
+            mane.ba_noedge_x = mane.bax/(lj1*lj2) #must do in this order
+            mane.bax = mane.bax/lj1 #or else bax gets corrected twice
+        else:
+            pass
+        if (e > mane.el and e < mane.ek):
+        #L1 edge, bax is correct, noedge using L2
+            mane.ba_noedge_x = mane.bax/lj1
+        else:
+            pass
+    #end nested function
 
-    elif:
-      z.name == 'Po' or 'At' or 'Fr' or 'Ra' or 'Ac' or 'Pa' or 'Np' or 'Cm' or 'Bk' or 'Cf' or 'Es'  or 'Fm' or 'Md' or 'No' or 'Lr' or 'Rf' or 'Db' or 'Sg' or 'Bh' or 'Hs' or 'Mt' or 'Ds' or 'Rg' or 'Cn' or 'Nh' or 'Fl' or 'Mc' or 'Lv' or 'Ts' or 'Og'
-      er = 3
-      raise Exception"""
-
+    ###########
     if z == 84 or 85 or 87 or 88 or 89 or 91 or 93:
         er = 3
         print("no doc for z = 84, 85, 87-89, 91, 93")
@@ -1004,7 +1017,7 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
                 #goto 38
                 #38 - selecting correct range
                 if e > mane.ek:
-                    print("debug in mucal: a K edge", e ) #goto 70
+                    print("debug in mucal: a K edge", e ) #goto 70  ! a K edge
                     #70
                     for i in range(len(mane.ak)): #do 400, I'm not sure if 400 & 80 are part of this for loop or after
                         bsum = mane.ak[i]*(math.log(e))**i
@@ -1013,30 +1026,29 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
                         summ = summ + bsum              #sum is a function in python so it is replaced here with two m's
                         sumbelow = sumbelow + belowsum
                     #400 continue /n end
-                    #80                    
-                    bax = math.exp(summ)
-                    ba_noedge_x = math.exp(sumbelow)
+                    #80
+                    fortranLineEighty()
                     
-                    if (e > mane.l3 and e < mane.l2):
-                        #L3 edge, correct for L1 in bax, just use M for noedge
-                        bax=bax/(lj1*lj2)
-                    else:
-                        pass
-
-                    if (e > mane.l2 and e < mane.el): 
-                        #L2 edge, correct for L1 in bax, noedge using L3
-                        ba_noedge_x = bax/(lj1*lj2) #must do in this order
-                        bax=bax/lj1 #or else bax gets corrected twice
-                    else:
-                        pass
+                #38
+                elif (e < mane.ek and e > mane.l2):
+                    print('DEBUG in mucal: an L1,2 edge',e)
+                    #goto 40    ! an L1,2 edge
+                    #start calculation at last
+                    #40   do 100 i=0,3 	! an L1,2 edge
+                    for i in range(len(mane.al)):
+                        bsum = mane.al[i]*(math.log(e))**i
+                        belowsum = mane.al[i]*(math.log(e))**i
+                        summ = summ + bsum
+                        sumbelow = sumbelow + belowsum
+                    #100  continue
+                    print('DEBUG in mucal: summ =', str(summ) + ', sumbelow = ', str(sumbelow) + 
+                        ', exp(summ) = ', str(math.exp(summ)) + ', exp(sumbelow) = ', str(math.exp(sumbelow)))
+                    #goto 80
+                    #80
+                    fortranLineEighty()
                     
-                    if (e > mane.el and e < mane.ek):
-                        #L1 edge, bax is correct, noedge using L2
-                        ba_noedge_x=bax/lj1
-                    else:
-                        pass
                     #Does it just go to 89 after 80 no matter what?
-                    #89 goes after many things so there should be a function for it
+                    #89 goes after many things so there should maybe be a function for it
                     #89 do 90 i = 0,3
                     for i in range(len(mane.coh)):
                         csum = mane.coh[i]*(math.log(e))**i
@@ -1048,8 +1060,9 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
                         cis = cis + cisum
                     #500 continue
                     binx = math.exp(cis)
-                    btox = bax + bcox + binx
-                    bto_noedge_x = ba_noedge_x + bcox+binx
+                    btox = mane.bax + bcox + binx
+                    bto_noedge_x = mane.ba_noedge_x + bcox + binx
+
 
                 else:
                     print("")
