@@ -945,70 +945,74 @@ Do not have
 ################# program starts ####################
 #####################################################
 """
- The structure of the Fortran code is as such:
- 1) error messages for z= 84, 85, 87-89, 91, 93, >95 & mane = "Po", "At", etc corresponding to z values
- 2) error message for zero energy value
- 3) initialize int and floar values?: 
-      bsum=0
-      belowsum=0.0
-      sum=0     # <- This 'sum' is replaced with 'summ' since 'sum' is a function in Python
-      sumbelow=0.0
-      chs=0
-      csum=0
-      cis=0
-      cisum=0
- 4) compared e and ek, e and el, e and em
- 5) finally calculate something with e, bsum, al, belowsum, am, sum, sumbelow, bax, ba_noedge_x
+ 
 """
-def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
+def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
+    
+    elmName = eval(mane)                        #convert mane (should be a string, allegedly) to class
+    xsec = [None]*10
     #nested function
     def fortranLineEighty(): #80
-        mane.bax = math.exp(summ)               #appends bax attribute
-        mane.ba_noedge_x = math.exp(sumbelow)   #appends ba_noedge_x attribute
-        if (e > mane.l3 and e < mane.l2):
+        elmName.bax = math.exp(summ)               #appends bax attribute
+        elmName.ba_noedge_x = math.exp(sumbelow)   #appends ba_noedge_x attribute
+        if (e > elmName.l3 and e < elmName.l2):
         #L3 edge, correct for L1 in bax, just use M for noedge
-            mane.bax = mane.bax/(lj1*lj2)
+            elmName.bax = elmName.bax/(lj1*lj2)
         else:
             pass
-        if (e > mane.l2 and e < mane.el): 
+        if (e > elmName.l2 and e < elmName.el): 
         #L2 edge, correct for L1 in bax, noedge using L3
-            mane.ba_noedge_x = mane.bax/(lj1*lj2) #must do in this order
-            mane.bax = mane.bax/lj1 #or else bax gets corrected twice
+            elmName.ba_noedge_x = elmName.bax/(lj1*lj2) #must do in this order
+            elmName.bax = elmName.bax/lj1 #or else bax gets corrected twice
         else:
             pass
-        if (e > mane.el and e < mane.ek):
+        if (e > elmName.el and e < elmName.ek):
         #L1 edge, bax is correct, noedge using L2
-            mane.ba_noedge_x = mane.bax/lj1
+            elmName.ba_noedge_x = elmName.bax/lj1
         else:
             pass
     #end nested function
 
     ###########
-    if z == 84 or 85 or 87 or 88 or 89 or 91 or 93:
+    if z in (84, 85, 87, 88, 89, 91, 93):
         er = 3
+        #if(erf)                        #I don't see how 'erf' becomes true or false
         print("no doc for z = 84, 85, 87-89, 91, 93")
-            
-    elif mane == Po or At or Fr or Ra or Ac or Pa or Np:
+    elif elmName in (Po, At, Fr, Ra, Ac, Pa, Np):
         er = 3
+        #if(erf)                        #I don't see how 'erf' becomes true or false
         print("no doc for mane = Po, At, Fr, Ra, Ac, Pa, Np")
-    
     elif z > 94:
         er = 4
+        #if(erf)                        #I don't see how 'erf' becomes true or false
         print("no doc for z > 94")
     #11
-    elif  z != mane.num: #this assumes 'mane' in the form of a class, not a string
+    elif  z != elmName.num: 
         er = 2
+        #if(erf)                        #I don't see how 'erf' becomes true or false
         print('no, z is the wrong number for that element')
-    
+    elif z == 0 or mane == '':
+        er = 7
+        #if(erf)                        #I don't see how 'erf' becomes true or false
+        print('no name no z what do you want?')
+    #calculation starts
     else:
-        elm = mane.name
+        elm = elmName.name
         print(elm, "is an excellent choice")
-        #20
+        #20 checking for zero energy input
         if en == 0:
+            er = 1
+            #if(erf)
             print("can't calculate zero energy")
+            #goto 10001
+        elif e < 0:
+            #goto 20000
+            #20000
+            xsec[7] = elmName.atwt
+            xsec[8] = elmName.den
         else:
             e = en
-            if e < mane.ek and e > mane.ek-0.001:
+            if e < elmName.ek and e > elmName.ek-0.001:
                 #goto 39
                 er = 6
                 #if (erf) print print*,'**energy at the middle of edge using pre-edge fit results may be wrong**'
@@ -1016,12 +1020,12 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
             else:
                 #goto 38
                 #38 - selecting correct range
-                if e > mane.ek:
+                if e > elmName.ek:
                     print("debug in mucal: a K edge", e ) #goto 70  ! a K edge
                     #70
-                    for i in range(len(mane.ak)): #do 400, I'm not sure if 400 & 80 are part of this for loop or after
-                        bsum = mane.ak[i]*(math.log(e))**i
-                        belowsum = mane.al[i]*(math.log(e))**i
+                    for i in range(len(elmName.ak)): #do 400, I'm not sure if 400 & 80 are part of this for loop or after
+                        bsum = elmName.ak[i]*(math.log(e))**i
+                        belowsum = elmName.al[i]*(math.log(e))**i
                         #what's with the indent in the fortran code
                         summ = summ + bsum              #sum is a function in python so it is replaced here with two m's
                         sumbelow = sumbelow + belowsum
@@ -1030,14 +1034,14 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
                     fortranLineEighty()
                     
                 #38
-                elif (e < mane.ek and e > mane.l2):
+                elif (e < elmName.ek and e > elmName.l2):
                     print('DEBUG in mucal: an L1,2 edge',e)
                     #goto 40    ! an L1,2 edge
                     #start calculation at last
                     #40   do 100 i=0,3 	! an L1,2 edge
-                    for i in range(len(mane.al)):
-                        bsum = mane.al[i]*(math.log(e))**i
-                        belowsum = mane.al[i]*(math.log(e))**i
+                    for i in range(len(elmName.al)):
+                        bsum = elmName.al[i]*(math.log(e))**i
+                        belowsum = elmName.al[i]*(math.log(e))**i
                         summ = summ + bsum
                         sumbelow = sumbelow + belowsum
                     #100  continue
@@ -1050,18 +1054,18 @@ def mucal(en,mane,z,unit,xsec,energy,fly,erf,er):
                     #Does it just go to 89 after 80 no matter what?
                     #89 goes after many things so there should maybe be a function for it
                     #89 do 90 i = 0,3
-                    for i in range(len(mane.coh)):
-                        csum = mane.coh[i]*(math.log(e))**i
+                    for i in range(len(elmName.coh)):
+                        csum = elmName.coh[i]*(math.log(e))**i
                         chs = chs + csum
                     #90 continue
                     bcox = math.exp(chs)
-                    for i in range(len(mane.cih)): #do 500
-                        cisum = mane.cih[i]*(math.log(e))**i
+                    for i in range(len(elmName.cih)): #do 500
+                        cisum = elmName.cih[i]*(math.log(e))**i
                         cis = cis + cisum
                     #500 continue
                     binx = math.exp(cis)
-                    btox = mane.bax + bcox + binx
-                    bto_noedge_x = mane.ba_noedge_x + bcox + binx
+                    btox = elmName.bax + bcox + binx
+                    bto_noedge_x = elmName.ba_noedge_x + bcox + binx
 
 
                 else:
