@@ -1001,15 +1001,16 @@ def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
                     z = correctionForZ                       #z is corrected from 0 input now
                     break
         #goto 20
-                elif correctionForZ == 95:
-                    er = 2
-                    #if(erf) print*,'**WRONG NAME**'
-                    print('WRONG NAME')
+                #elif correctionForZ == 95:
+                #    er = 2
+                #    #if(erf) print*,'**WRONG NAME**'
+                #    print('WRONG NAME')""" #I don't think this elif is needed?
                 else:
                     pass
                 correctionForZ = correctionForZ + 1 
         except NameError:
-            print('I don\'t know that element sorry bruh')
+            er = 2
+            print('WRONG NAME')
 
     #calculation starts
     else: #mane = '' and z > 0 and z <= 94
