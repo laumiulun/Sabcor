@@ -1,7 +1,6 @@
 import math
-# I only see mucal(en,mane,z,unit,xsec,energy,fly,erf,er) subroutine called in sab_sub.F
-
-#copy and find "do 400, I'm not sure if 400 & 80 are part of this for loop or after"
+#not sure about 'erf', search to see where orignally used
+#search 'need a call to error for non-existent class name'
 
 class elements():
     #em starts at S (16) it seems, what should the 1st 15 be?
@@ -944,13 +943,10 @@ Do not have
 ##################################################### 
 ################# program starts ####################
 #####################################################
-"""
- 
-"""
 def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
     
-    elmName = eval(mane)                        #convert mane (should be a string, allegedly) to class
     xsec = [None]*10
+    
     #nested function
     def fortranLineEighty(): #80
         elmName.bax = math.exp(summ)               #appends bax attribute
@@ -978,7 +974,7 @@ def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
         er = 3
         #if(erf)                        #I don't see how 'erf' becomes true or false
         print("no doc for z = 84, 85, 87-89, 91, 93")
-    elif elmName in (Po, At, Fr, Ra, Ac, Pa, Np):
+    elif mane in ("Po", "At", "Fr", "Ra", "Ac", "Pa", "Np"):
         er = 3
         #if(erf)                        #I don't see how 'erf' becomes true or false
         print("no doc for mane = Po, At, Fr, Ra, Ac, Pa, Np")
@@ -986,17 +982,53 @@ def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
         er = 4
         #if(erf)                        #I don't see how 'erf' becomes true or false
         print("no doc for z > 94")
-    #11
-    elif  z != elmName.num: 
-        er = 2
-        #if(erf)                        #I don't see how 'erf' becomes true or false
-        print('no, z is the wrong number for that element')
-    elif z == 0 or mane == '':
+    elif z == 0 and mane == '': 
         er = 7
         #if(erf)                        #I don't see how 'erf' becomes true or false
         print('no name no z what do you want?')
+    
+    elif mane != '': #goto 10 ... a name exists in the mucal function input, introduce the corresponding class for string input
+        #10 j=1 
+        #   call upcase(mane)
+        #checking the name
+        #11   if(j.le.94.and.mane.eq.name(j)) then
+        #Seems 11 is supposed to loop until name(j) and mane match, then set the given z = 0 to the appropriate value
+        try: 
+            elmName = eval(mane)                        #convert mane (should be a string, allegedly) to class
+            correctionForZ = 1
+            while correctionForZ <= 95:
+                if correctionForZ == elmName.element_num:
+                    z = correctionForZ                       #z is corrected from 0 input now
+                    break
+        #goto 20
+                elif correctionForZ == 95:
+                    er = 2
+                    #if(erf) print*,'**WRONG NAME**'
+                    print('WRONG NAME')
+                else:
+                    pass
+                correctionForZ = correctionForZ + 1 
+        except NameError:
+            print('I don\'t know that element sorry bruh')
+
     #calculation starts
-    else:
+    else: #mane = '' and z > 0 and z <= 94
+        elmClassArr = [H, He, Li, Be, B, C, N, O, F, Ne, Na, Mg, Al, Si, P, S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr, Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe, Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn, Fr, Ra, Ac, Th, Pa, U, Np, Pu]
+        #need to make empty mane equal the correct string for element name somehow
+        correctionForMane = 1
+        while correctionForMane < len(elmClassArr):
+            if z == elmClassArr[correctionForMane].element_num:
+                mane = elmClassArr[correctionForMane].name
+                break
+            else:
+                pass
+            correctionForMane = correctionForMane + 1
+
+        mane = elmName.name
+        elmName = eval(mane)                        #convert mane (should be a string, allegedly) to class
+        #n=z
+        #mane=name(n)
+        #goto 20
         elm = elmName.name
         print(elm, "is an excellent choice")
         #20 checking for zero energy input
@@ -1023,7 +1055,7 @@ def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
                 if e > elmName.ek:
                     print("debug in mucal: a K edge", e ) #goto 70  ! a K edge
                     #70
-                    for i in range(len(elmName.ak)): #do 400, I'm not sure if 400 & 80 are part of this for loop or after
+                    for i in range(len(elmName.ak)): #do 400
                         bsum = elmName.ak[i]*(math.log(e))**i
                         belowsum = elmName.al[i]*(math.log(e))**i
                         #what's with the indent in the fortran code
