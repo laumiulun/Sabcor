@@ -1,4 +1,4 @@
-# search "programme starts" as with fortran
+# search "programme starts" as with fortran parallel
 
 import math
 #"20 checking for zero energy input" may need to be a function so it can be used in both the else where it currently resides and in the preceding elif
