@@ -1,11 +1,19 @@
+# Created by Matthew Adas
+# Based on Code Created by Corwin Booth and Dan Olive
+#
 # search "programme starts" as with fortran parallel
+#
 
-import math
-#"20 checking for zero energy input" may need to be a function so it can be used in both the else where it currently resides and in the preceding elif
+#notes for working
+#left off working/checking "400 continue /n goto 80 ..."goto 80" is in 4 places" 
+
+#"zeroEnergyCheck" is where a lot of things are
 #element_num = 52 is the last element num at the moment
 
 #not sure about 'erf', search to see where orignally used
 #double check 'else: #mane = '' and z > 0 and z <= 94' to make sure I didn't forget something
+
+import math
 
 class elements():
     #em starts at S (16) it seems, what should the 1st 15 be?
@@ -977,7 +985,8 @@ def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
     xsec = [None]*10
     
     #nested function
-    def fortranLineEighty(): #80
+    def fortranLineEighty(summ, sumbelow, e): #80
+        
         elmName.bax = math.exp(summ)               #appends bax attribute
         elmName.ba_noedge_x = math.exp(sumbelow)   #appends ba_noedge_x attribute
         if (e > elmName.l3 and e < elmName.l2):
@@ -997,6 +1006,94 @@ def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
         else:
             pass
     #end nested function
+
+    def zeroEnergyCheck(elm, er): #20 checking for zero energy input
+        def errorSix(er): #39
+            er = 6
+            #if (erf) print print*,'**energy at the middle of edge using pre-edge fit results may be wrong**'
+            print("energy at the middle of edge using pre-edge fit results may be wrong")
+
+        if en == 0:
+            er = 1  #oh this er needs to go back into the mucal function
+            #if(erf)
+            print("can't calculate zero energy")
+            #goto 10001 ...this is just "continue \n end"
+        elif en < 0:
+            #goto 20000 ...this is the only case of "goto 20000"
+            #20000
+            xsec[7] = elmName.atwt
+            xsec[8] = elmName.den
+        else:
+            e = en
+        #"endif" here in fortran, continuing on with the program
+            #initialize
+            #bsum=0
+            #belowsum...etc, this doesn't need to be done in Python
+            
+            # "check for middle of edge input" quoted from original Fortran code for searchability
+            if e < elmName.ek and e > elmName.ek-0.001:
+                #goto 39
+                errorSix(er)
+            elif e < elmName.el and e > elmName.el-0.001:
+                #goto 39
+                errorSix(er)
+            elif e < elmName.em and e > elmName.em-0.001:
+                #goto 39
+                errorSix(er)
+
+            else:
+                #goto 38
+            #endif
+                #38 - selecting correct range
+                if e > elmName.ek:
+                    print("debug in mucal: a K edge", e ) #goto 70  ! a K edge ...this is the only "goto 70"
+                    #70
+                    for i in range(len(elmName.ak)): #do 400
+                        bsum = elmName.ak[i]*(math.log(e))**i
+                        belowsum = elmName.al[i]*(math.log(e))**i
+                        #what's with the indent in the fortran code
+                        summ = summ + bsum              #sum is a function in python so it is replaced here with two m's
+                        sumbelow = sumbelow + belowsum
+                    #400 continue /n goto 80 ..."goto 80" is in 4 places
+                    fortranLineEighty(summ, sumbelow, e)
+                    
+                #38
+                elif (e < elmName.ek and e > elmName.l2):
+                    print('DEBUG in mucal: an L1,2 edge',e)
+                    #goto 40    ! an L1,2 edge
+                    #start calculation at last
+                    #40   do 100 i=0,3 	! an L1,2 edge
+                    for i in range(len(elmName.al)):
+                        bsum = elmName.al[i]*(math.log(e))**i
+                        belowsum = elmName.al[i]*(math.log(e))**i
+                        summ = summ + bsum
+                        sumbelow = sumbelow + belowsum
+                    #100  continue
+                    print('DEBUG in mucal: summ =', str(summ) + ', sumbelow = ', str(sumbelow) + 
+                        ', exp(summ) = ', str(math.exp(summ)) + ', exp(sumbelow) = ', str(math.exp(sumbelow)))
+                    #goto 80
+                    #80
+                    fortranLineEighty(summ, sumbelow, e)
+                    
+                    #Does it just go to 89 after 80 no matter what?
+                    #89 goes after many things so there should maybe be a function for it
+                    #89 do 90 i = 0,3
+                    for i in range(len(elmName.coh)):
+                        csum = elmName.coh[i]*(math.log(e))**i
+                        chs = chs + csum
+                    #90 continue
+                    bcox = math.exp(chs)
+                    for i in range(len(elmName.cih)): #do 500
+                        cisum = elmName.cih[i]*(math.log(e))**i
+                        cis = cis + cisum
+                    #500 continue
+                    binx = math.exp(cis)
+                    btox = elmName.bax + bcox + binx
+                    bto_noedge_x = elmName.ba_noedge_x + bcox + binx
+
+                else:
+                    print("")
+
 
     ###########
     if z in (84, 85, 87, 88, 89, 91, 93):
@@ -1021,35 +1118,39 @@ def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
         #10 j=1 
         #   call upcase(mane)
         #checking the name
-        #11   if(j.le.94.and.mane.eq.name(j)) then
-        #Seems 11 is supposed to loop until name(j) and mane match, then set the given z = 0 to the appropriate value
+        
         try: 
             elmName = eval(mane)                        #convert mane (should be a string, allegedly) to class
+            #10 j=1 
             correctionForZ = 1
+            #call upcase(mane)
+            
             while correctionForZ <= 95:
+                #11   if(j.le.94.and.mane.eq.name(j)) then...
+                #Seems 11 is supposed to loop until name(j) and mane match, then set the given z = 0 to the appropriate valu
                 if correctionForZ == elmName.element_num:
-                    z = correctionForZ                       #z is corrected from 0 input now
-                    break
-        #goto 20
+                    z = correctionForZ                       #z is corrected to match given "mane" 
+                    break #goto 20 ...If correctionForZ is the correct element_num, the while loop ends and code continues to zeroEnergyCheck()
                 #elif correctionForZ == 95:
                 #    er = 2
                 #    #if(erf) print*,'**WRONG NAME**'
                 #    print('WRONG NAME')""" 
-                #I don't think this commented out elif is needed? I think this is covered by the following "except"
+                #    goto 10001
+                #I don't think the above elif commented out  is needed? I think the following "except" takes its place
                 else:
-                    pass
-                correctionForZ = correctionForZ + 1 
+                    pass #if correctionForZ != element_num, while loop continues
+                correctionForZ = correctionForZ + 1
+            #20 ...try succeeds when while loop exits after matching the correct z, code continues to check energy
+            zeroEnergyCheck(elmName, er)
+
         except NameError:
             er = 2
             #    #if(erf) print*,'**WRONG NAME**'
             print('WRONG NAME')
 
-        #20 - I need to do line 20 stuff
-
     #calculation starts
     else: #mane = '' and z > 0 and z <= 94
         elmClassArr = [H, He, Li, Be, B, C, N, O, F, Ne, Na, Mg, Al, Si, P, S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr, Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe, Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn, Fr, Ra, Ac, Th, Pa, U, Np, Pu]
-        #need to make empty mane equal the correct string for element name somehow
         correctionForMane = 1
         while correctionForMane < len(elmClassArr):
             if z == elmClassArr[correctionForMane].element_num:
@@ -1064,79 +1165,9 @@ def mucal(en, mane, z, unit, xsec, energy, fly, erf, er):
         #n=z
         #mane=name(n)
         #goto 20
-        elm = elmName.name
-        print(elm, "is an excellent choice")
-        #20 checking for zero energy input
-        if en == 0:
-            er = 1
-            #if(erf)
-            print("can't calculate zero energy")
-            #goto 10001
-        elif e < 0:
-            #goto 20000
-            #20000
-            xsec[7] = elmName.atwt
-            xsec[8] = elmName.den
-        else:
-            e = en
-            if e < elmName.ek and e > elmName.ek-0.001:
-                #goto 39
-                er = 6
-                #if (erf) print print*,'**energy at the middle of edge using pre-edge fit results may be wrong**'
-
-            else:
-                #goto 38
-                #38 - selecting correct range
-                if e > elmName.ek:
-                    print("debug in mucal: a K edge", e ) #goto 70  ! a K edge
-                    #70
-                    for i in range(len(elmName.ak)): #do 400
-                        bsum = elmName.ak[i]*(math.log(e))**i
-                        belowsum = elmName.al[i]*(math.log(e))**i
-                        #what's with the indent in the fortran code
-                        summ = summ + bsum              #sum is a function in python so it is replaced here with two m's
-                        sumbelow = sumbelow + belowsum
-                    #400 continue /n end
-                    #80
-                    fortranLineEighty()
-                    
-                #38
-                elif (e < elmName.ek and e > elmName.l2):
-                    print('DEBUG in mucal: an L1,2 edge',e)
-                    #goto 40    ! an L1,2 edge
-                    #start calculation at last
-                    #40   do 100 i=0,3 	! an L1,2 edge
-                    for i in range(len(elmName.al)):
-                        bsum = elmName.al[i]*(math.log(e))**i
-                        belowsum = elmName.al[i]*(math.log(e))**i
-                        summ = summ + bsum
-                        sumbelow = sumbelow + belowsum
-                    #100  continue
-                    print('DEBUG in mucal: summ =', str(summ) + ', sumbelow = ', str(sumbelow) + 
-                        ', exp(summ) = ', str(math.exp(summ)) + ', exp(sumbelow) = ', str(math.exp(sumbelow)))
-                    #goto 80
-                    #80
-                    fortranLineEighty()
-                    
-                    #Does it just go to 89 after 80 no matter what?
-                    #89 goes after many things so there should maybe be a function for it
-                    #89 do 90 i = 0,3
-                    for i in range(len(elmName.coh)):
-                        csum = elmName.coh[i]*(math.log(e))**i
-                        chs = chs + csum
-                    #90 continue
-                    bcox = math.exp(chs)
-                    for i in range(len(elmName.cih)): #do 500
-                        cisum = elmName.cih[i]*(math.log(e))**i
-                        cis = cis + cisum
-                    #500 continue
-                    binx = math.exp(cis)
-                    btox = elmName.bax + bcox + binx
-                    bto_noedge_x = elmName.ba_noedge_x + bcox + binx
-
-
-                else:
-                    print("")
+        
+        
+        zeroEnergyCheck(elmName, er)
 
 
 """
