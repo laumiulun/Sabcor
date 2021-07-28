@@ -17,6 +17,20 @@ To run a simple test, type:
 
     sabcor example.dat
 
+this looks for a sab.inp in the current directory, but one can also specify a input file by
+
+    sabcor <data_file> <sabcor_input>
+
+## Sab.inp format
+
+    PHI 49.4
+    VOLUME 47.22
+    THICKNESS 46000
+    FORMULA Hf
+    EDGE Hf K
+    FLUOR 8047
+
+
 The outputs should be
     The output onto the screen should look like:
     ---------------------
