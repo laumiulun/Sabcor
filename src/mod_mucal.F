@@ -1,13 +1,27 @@
-      subroutine mucal(en,mane,z,unit,xsec,energy,fly,erf,er)
+       subroutine mucal(en,mane,z,unit,xsec,energy,fly,erf,er)
 c----------------------------------------------------------------------+
 c	MODIFIED FROM ORIGINAL BY CORWIN BOOTH
 c	added xsec(11)=total crossection not including current edge.
 c	change L3 edge of U to 17166 eV from 17167 eV to be consistent with 
 c	orange book.
-c
-c       12/22/14 CB added Am, copied all numbers from Pu except edge
-c               positions
-c
+c									|
+c	Modified 2/7/2014 by Dan Olive					|
+c	Added xsec(1) to subroutine output. Changed L edge to use	|
+c	L coefficients and divide out jump, instead of M coefficients	|
+c	and multiply in jumps. Difference in slope gave rise to ~2.5%	|
+c	change in cross section over the L3 and L2 edges. Fixed glitches|
+c	that occurred at 1 keV in all cross sections. Fixed noedge	|
+c	so cross section doesn't dip in L2 region, and now instead of	|
+c	M coefficients for all L regions, noedge uses M for L3, L3 in	|
+c	the L2 region, and L2 in the L1 region.				|
+c									|
+c	4/16/2014 DTO							|
+c	Corrected U L edge coefficients					|
+c	Corrected L alpha and L beta of the following elements:		|
+c	La,Nd,Pm,Sm,Eu,Gd,Tb,Dy,Ho,Er					|
+c									|
+c	Also fixed density of H and C					|
+c									|
 c	to go to the begining of the acual programme search for        |
 c	"programme starts".                                            |
 c     this is a program to calculate x-sections useing mcmaster        |
@@ -16,7 +30,7 @@ c     at the university of notre dame.i am thankful to                 |
 c     dr. b. a. bunker and mr. q. t. islam for their helpful           |
 c     suggestions. special thanks goes to mr. m. zanabria              |
 c     for helping to get all the data in.                              |
-c     ***note:this program has data for all the elements from 1 to 95  |
+c     ***note:this program has data for all the elements from 1 to 94  |
 c     with the following exceptions:                                   |
 c     84  po \                                                         |
 c     85  at |                                                         |
@@ -65,8 +79,8 @@ c                                                                      |
 c     error codes:                                                     |
 c     er=1: energy input is zero                                       |
 c     er=2: name does not match                                        |
-c     er=3: no documentation for given element (z<95)                  |
-c     er=4: no documentation for given element (z>95)                  |
+c     er=3: no documentation for given element (z<94)                  |
+c     er=4: no documentation for given element (z>94)                  |
 c     er=5: l-edge calculation may be wrong for z<30 as mcmaster       |
 c     uses l1 only.                                                    |
 c     er=6: energy at the middle of edge                               |
@@ -94,12 +108,12 @@ c     $Log:	mucal.f,v $
 c Revision 1.7  91/09/06  14:48:38  patb
 c *** empty log message ***
 c         
-      parameter (nel=95)
+      parameter (nel=94)
       integer n,z,er
       logical erf
       character*2 name(nel),mane,unit*1
       real bax,xsec(11),ka(nel),kb(nel),la(nel),lb(nel),energy(9)
-      real l2(nel),l3(nel),lj3(nel),lj2
+      real l2(nel),l3(nel),lj3(nel),lj2,lj1
       dimension ek(nel),el(nel),em(nel),den(nel),atwt(nel)
       dimension cf(nel),fek(nel),fel(3,nel),fly(4)
       dimension ak(0:3,nel),al(0:3,nel),am(0:3,nel),an(0:3,nel)
@@ -114,7 +128,7 @@ c
      $     0.000000e+00,  0.000000e+00,  0.000000e+00,  0.000000e+00/
       data an(0, 1),an(1, 1),an(2, 1),an(3, 1)/
      $     0.000000e+00,  0.000000e+00,  0.000000e+00,  0.000000e+00/
-      data den( 1),cf( 1),atwt(1)/1.008, 0.167400e+01,1.008/
+      data den( 1),cf( 1),atwt(1)/8.987e-05, 0.167400e+01,1.008/
       data coh(0, 1),coh(1, 1),coh(2, 1),coh(3, 1)/
      $     -0.119075e+00, -0.937086e+00, -0.200538e+00,  0.106587e-01/
       data cih(0, 1),cih(1, 1),cih(2, 1),cih(3, 1)/
@@ -189,7 +203,7 @@ c
      $     0.000000e+00,  0.000000e+00,  0.000000e+00,  0.000000e+00/
       data an(0, 6),an(1, 6),an(2, 6),an(3, 6)/
      $     0.000000e+00,  0.000000e+00,  0.000000e+00,  0.000000e+00/
-      data den( 6),cf( 6),atwt(6)/1.580, 0.199400e+02,12.01/
+      data den( 6),cf( 6),atwt(6)/2.260, 0.199400e+02,12.01/
       data coh(0, 6),coh(1, 6),coh(2, 6),coh(3, 6)/
      $     0.310861e+01, -0.260580e+00, -0.271974e+00,  0.135181e-01/
       data cih(0, 6),cih(1, 6),cih(2, 6),cih(3, 6)/
@@ -1042,7 +1056,7 @@ c
       data name(57),  ek(57),el(57),em(57)/
      $     'La',  0.389250e+02,  0.626700e+01,  0.136300e+01/
       data ak(0,57),ak(1,57),ak(2,57),ak(3,57)/
-     $     0.109780e+02,  0.238140e+01, -0.103549e+01,  0.702339e-01/
+     $     0.109780e+02,  0.2238140e+01, -0.103549e+01,  0.702339e-01/
       data al(0,57),al(1,57),al(2,57),al(3,57)/
      $     0.163134e+02, -0.220156e+01, -0.980569e-01,  0.000000e+00/
       data am(0,57),am(1,57),am(2,57),am(3,57)/
@@ -1110,7 +1124,7 @@ c
       data cih(0,60),cih(1,60),cih(2,60),cih(3,60)/
      $     0.437283e+00,  0.131370e+01, -0.162866e+00,  0.229377e-02/
       data ka(60),kb(60),la(60),lb(60)/
-     $     0.373590e+02,  0.422690e+02,  0.543100e+01,  0.595600e+01/
+     $     0.373590e+02,  0.422690e+02,  0.523000e+01,  0.572100e+01/
       data name(61),  ek(61),el(61),em(61)/
      $     'Pm',  0.451840e+02,  0.742800e+01,  0.165100e+01/
       data ak(0,61),ak(1,61),ak(2,61),ak(3,61)/
@@ -1128,7 +1142,7 @@ c
       data cih(0,61),cih(1,61),cih(2,61),cih(3,61)/
      $     0.405823e+00,  0.133837e+01, -0.167229e+00,  0.255570e-02/
       data ka(61),kb(61),la(61),lb(61)/
-     $     0.386490e+02,  0.439450e+02,  0.563600e+01,  0.620600e+01/
+     $     0.386490e+02,  0.439450e+02,  0.543250e+01,  0.596100e+01/
       data name(62),  ek(62),el(62),em(62)/
      $     'Sm',  0.468350e+02,  0.773700e+01,  0.172900e+01/
       data ak(0,62),ak(1,62),ak(2,62),ak(3,62)/
@@ -1146,7 +1160,7 @@ c
       data cih(0,62),cih(1,62),cih(2,62),cih(3,62)/
      $     0.355383e+00,  0.137733e+01, -0.174941e+00,  0.306213e-02/
       data ka(62),kb(62),la(62),lb(62)/
-     $     0.401240e+02,  0.454000e+02,  0.584600e+01,  0.645600e+01/
+     $     0.401240e+02,  0.454000e+02,  0.563610e+01,  0.620510e+01/
       data name(63),  ek(63),el(63),em(63)/
      $     'Eu',  0.485200e+02,  0.805200e+01,  0.180000e+01/
       data ak(0,63),ak(1,63),ak(2,63),ak(3,63)/
@@ -1164,7 +1178,7 @@ c
       data cih(0,63),cih(1,63),cih(2,63),cih(3,63)/
      $     0.280316e+00,  0.144016e+01, -0.188641e+00,  0.401226e-02/
       data ka(63),kb(63),la(63),lb(63)/
-     $     0.415290e+02,  0.470270e+02,  0.605900e+01,  0.671400e+01/
+     $     0.415290e+02,  0.470270e+02,  0.584570e+01,  0.645640e+01/
       data  name(64),  ek(64),el(64)/
      $     'Gd', 0.502400e+02, 0.837600e+01/
       data em(64),atwt(64)/1.882,157.260/
@@ -1182,7 +1196,7 @@ c
       data cih(0,64),cih(1,64),cih(2,64),cih(3,64)/
      $     0.273133e+00,  0.143842e+01, -0.186137e+00,  0.375240e-02/
       data ka(64),kb(64),la(64),lb(64)/
-     $     0.429830e+02,  0.487180e+02,  0.627500e+01,  0.697900e+01/
+     $     0.429830e+02,  0.487180e+02,  0.605720e+01,  0.671320e+01/
       data name(65),  ek(65),el(65),em(65)/
      $     'Tb',  0.519960e+02,  0.870800e+01,  0.196700e+01/
       data ak(0,65),ak(1,65),ak(2,65),ak(3,65)/
@@ -1200,7 +1214,7 @@ c
       data cih(0,65),cih(1,65),cih(2,65),cih(3,65)/
      $     0.257539e+00,  0.145064e+01, -0.187591e+00,  0.379932e-02/
       data ka(65),kb(65),la(65),lb(65)/
-     $     0.444700e+02,  0.503910e+02,  0.649500e+01,  0.724900e+01/
+     $     0.444700e+02,  0.503910e+02,  0.627280e+01,  0.697800e+01/
       data name(66),  ek(66),el(66),em(66)/
      $     'Dy',  0.537890e+02,  0.904700e+01,  0.204600e+01/
       data ak(0,66),ak(1,66),ak(2,66),ak(3,66)/
@@ -1218,7 +1232,7 @@ c
       data cih(0,66),cih(1,66),cih(2,66),cih(3,66)/
      $     0.242685e+00,  0.146266e+01, -0.189102e+00,  0.385628e-02/
       data ka(66),kb(66),la(66),lb(66)/
-     $     0.459850e+02,  0.521780e+02,  0.672000e+01,  0.752800e+01/
+     $     0.459850e+02,  0.521780e+02,  0.649520e+01,  0.724770e+01/
       data name(67),  ek(67),el(67),em(67)/
      $     'Ho',  0.556180e+02,  0.939500e+01,  0.212700e+01/
       data ak(0,67),ak(1,67),ak(2,67),ak(3,67)/
@@ -1236,7 +1250,7 @@ c
       data cih(0,67),cih(1,67),cih(2,67),cih(3,67)/
      $     0.228493e+00,  0.147438e+01, -0.190559e+00,  0.390903e-02/
       data ka(67),kb(67),la(67),lb(67)/
-     $     0.475280e+02,  0.539340e+02,  0.694800e+01,  0.781000e+01/
+     $     0.475280e+02,  0.539340e+02,  0.671980e+01,  0.752530e+01/
       data name(68),  ek(68),el(68),em(68)/
      $     'Er',  0.574860e+02,  0.975200e+01,  0.221200e+01/
       data ak(0,68),ak(1,68),ak(2,68),ak(3,68)/
@@ -1254,7 +1268,7 @@ c
       data cih(0,68),cih(1,68),cih(2,68),cih(3,68)/
      $     0.225233e+00,  0.148545e+01, -0.191908e+00,  0.395645e-02/
       data ka(68),kb(68),la(68),lb(68)/
-     $     0.490990e+02,  0.556900e+02,  0.718100e+01,  0.810300e+01/
+     $     0.490990e+02,  0.556900e+02,  0.694870e+01,  0.781090e+01/
       data name(69),  ek(69),el(69),em(69)/
      $     'Tm',  0.593900e+02,  0.101160e+02,  0.230700e+01/
       data ak(0,69),ak(1,69),ak(2,69),ak(3,69)/
@@ -1566,7 +1580,7 @@ c
       data ak(0,92),ak(1,92),ak(2,92),ak(3,92)/
      $     0.137951e+02,  0.123983e+01, -0.801545e+00,  0.553596e-01/
       data al(0,92),al(1,92),al(2,92),al(3,92)/
-     $     0.175258e+02, -0.207237e+06, -0.723932e-01,  0.000000e+00/
+     $     0.175258e+02, -0.207237e+01, -0.723932e-01,  0.000000e+00/
       data am(0,92),am(1,92),am(2,92),am(3,92)/
      $     0.170353e+02, -0.256903e+01,  0.000000e+00,  0.000000e+00/
       data an(0,92),an(1,92),an(2,92),an(3,92)/
@@ -1597,27 +1611,10 @@ c
      $     0.388791e-01,  0.182229e+01, -0.276099e+00,  0.107392e-01/
       data ka(94),kb(94),la(94),lb(94)/
      $     0.103653e+03,  0.117146e+03,  0.142790e+02,  0.182780e+02/
-      data name(95),  ek(95),el(95),em(95)/
-     $     'Am',  0.124982e+03,  0.238080e+02,  0.613300e+01/
-      data ak(0,95),ak(1,95),ak(2,95),ak(3,95)/
-     $     0.182787e+02, -0.117371e+01, -0.368344e+00,  0.298738e-01/
-      data al(0,95),al(1,95),al(2,95),al(3,95)/
-     $     0.175519e+02, -0.202162e+01, -0.822940e-01,  0.000000e+00/
-      data am(0,95),am(1,95),am(2,95),am(3,95)/
-     $     0.172953e+02, -0.262164e+01,  0.000000e+00,  0.000000e+00/
-      data an(0,95),an(1,95),an(2,95),an(3,95)/
-     $     0.148535e+02, -0.187733e+01,  0.000000e+00,  0.000000e+00/
-      data atwt(95),den(95),cf(95)/
-     $     0.239100e+03, 0.197000e+02, 0.397000e+03/
-      data coh(0,95),coh(1,95),coh(2,95),coh(3,95)/
-     $     0.838174e+01,  0.477085e+00, -0.366556e+00,  0.173422e-01/
-      data cih(0,95),cih(1,95),cih(2,95),cih(3,95)/
-     $     0.388791e-01,  0.182229e+01, -0.276099e+00,  0.107392e-01/
-      data ka(95),kb(95),la(95),lb(95)/
-     $     0.106472e+03,  0.120284e+03,  0.146200e+02,  0.188560e+02/
       data name(84),name(85),name(87),name(88),name(89),name(91)
      $     ,name(93)/'  ','  ','  ','  ','  ','  ','  '/
       data lj2 / 0.141000e+01 /
+      data lj1 / 0.116000e+01 /
       data l2(12),l3(12),lj3(12)/
      $     0.496000e-01, 0.4920000e-01,  0.00/
       data l2(13),l3(13),lj3(13)/
@@ -1770,8 +1767,6 @@ c
      $     0.209470e+02,  0.171660e+02,  0.229200e+01/	! CB changed L3 of U
       data l2(94),l3(94),lj3(94)/
      $     0.222630e+02,  0.180530e+02,  0.225100e+01/
-      data l2(95),l3(95),lj3(95)/
-     $     0.229520e+02,  0.185100e+02,  0.225100e+01/  ! CB added, lj3=Pu
       data fek( 1),fel(1, 1),fel(2, 1),fel(3, 1)/
      $     0.000000E+00, 0.000000E+00, 0.000000E+00, 0.000000E+00/
       data fek( 2),fel(1, 2),fel(2, 2),fel(3, 2)/
@@ -1960,8 +1955,6 @@ c
      $     0.973000E+00, 0.187000E+00, 0.466000E+00, 0.502000E+00/
       data fek(94),fel(1,94),fel(2,94),fel(3,94)/
      $     0.973000E+00, 0.205000E+00, 0.464000E+00, 0.514000E+00/
-      data fek(95),fel(1,95),fel(2,95),fel(3,95)/
-     $     0.973000E+00, 0.205000E+00, 0.464000E+00, 0.514000E+00/
 c*******************************************************************
 c     programme starts (phew!)                                     *
 c*******************************************************************
@@ -1992,7 +1985,7 @@ c------------------------------------------------------------------+
       endif
       if(mane.ne.'  ') then
          goto 10
-      elseif(z.gt.95) then
+      elseif(z.gt.94) then
          er=4
          if(erf) print*,'**no documents for Z > 94**'
          goto 10001
@@ -2006,11 +1999,11 @@ c------------------------------------------------------------------+
 c------------------------------------------------------------------+
 c     checking the name                                            |
 c------------------------------------------------------------------+
- 11   if(j.le.95.and.mane.eq.name(j)) then
+ 11   if(j.le.94.and.mane.eq.name(j)) then
          n=j
          z=j
          goto 20
-      elseif(j.gt.95) then
+      elseif(j.gt.94) then
          er=2
          if(erf) print*,'**WRONG NAME**'
          goto 10001
@@ -2061,9 +2054,12 @@ c------------------------------------------------------------------+
  38   if(e.ge.ek(n)) then
 	!print *,'DEBUG in mucal: a K edge',e
          goto 70	! a K edge
-      elseif(e.lt.ek(n).and.e.ge.el(n)) then
-	!print *,'DEBUG in mucal: an L edge',e
-         goto 40	! an L edge
+      elseif(e.lt.ek(n).and.e.ge.l2(n)) then
+	!print *,'DEBUG in mucal: an L1,2 edge',e
+         goto 40	! an L1,2 edge
+      elseif(e.lt.l2(n).and.e.ge.l3(n)) then
+	!print *,'DEBUG in mucal: an L3 edge',e
+         goto 45	! an L3 edge
       elseif(e.lt.el(n).and.e.ge.em(n)) then
 	!print *,'DEBUG in mucal: an M edge',e
          goto 50	! an M edge
@@ -2074,51 +2070,39 @@ c------------------------------------------------------------------+
 c-------------------------------------------------------------------+
 c     start calculation at last                                     |
 c-------------------------------------------------------------------+
- 40   do 100 i=0,3 	! an L edge
-         if (e.eq.1.) then
-            bsum=al(i,n)*1.
-            belowsum=am(i,n)*1.
-         else
+ 40   do 100 i=0,3 	! an L1,2 edge
             bsum=al(i,n)*(log(e))**i
-            belowsum=am(i,n)*(log(e))**i
-         endif
+            belowsum=al(i,n)*(log(e))**i
          sum=sum+bsum
 	 sumbelow=sumbelow+belowsum
  100  continue
 	 !print *,'DEBUG in mucal: sum, sumbelow,exp=',sum,sumbelow,exp(sum),exp(sumbelow)
       goto 80
+ 45   do 105 i=0,3 	! an L3 edge
+            bsum=al(i,n)*(log(e))**i
+            belowsum=am(i,n)*(log(e))**i
+         sum=sum+bsum
+	 sumbelow=sumbelow+belowsum
+ 105  continue
+	 !print *,'DEBUG in mucal: sum, sumbelow,exp=',sum,sumbelow,exp(sum),exp(sumbelow)
+      goto 80
  50   do 200 i=0,3 	! an M edge
-         if (e.eq.1.) then
-            bsum=am(i,n)*1.
-            belowsum=an(i,n)*1.
-         else
             bsum=am(i,n)*(log(e))**i
             belowsum=an(i,n)*(log(e))**i
-         endif
          sum=sum+bsum
 	 sumbelow=sumbelow+belowsum
  200  continue
       goto 79
  60   do 300 i=0,3 	! less than an M edge
-         if (e.eq.1.) then
-            bsum=an(i,n)*1.
-            belowsum=an(i,n)*1.
-         else
             bsum=an(i,n)*(log(e))**i
             belowsum=an(i,n)*(log(e))**i
-         endif
          sum=sum+bsum
 	 sumbelow=sumbelow+belowsum
  300  continue
       goto 80
  70   do 400 i=0,3	! a K edge
-         if (e.eq.1.) then
-            bsum=ak(i,n)*1.
-            belowsum=al(i,n)*1.
-         else
             bsum=ak(i,n)*(log(e))**i
             belowsum=al(i,n)*(log(e))**i
-         endif
          sum=sum+bsum
 	 sumbelow=sumbelow+belowsum
  400  continue
@@ -2138,29 +2122,29 @@ c     correct for l-edges since mcmaster uses l1-edge            |
 c     use edge jumps for correct x-sections                      |
 c----------------------------------------------------------------+
       if(e.ge.l3(n).and.e.lt.l2(n)) then
-		ba_noedge_x=bax
-		bax=bax*lj3(n)   ! CB: Starting from M-edge coeffs and going up
-!		ba_noedge_x=bax*lj3(n)*lj2
+!		L3 edge, correct for L1 in bax, just use M for noedge
+		bax=bax/(lj1*lj2)
       endif
-      if(e.ge.l2(n).and.e.lt.el(n)) bax=bax*lj3(n)*lj2
+      if(e.ge.l2(n).and.e.lt.el(n)) then
+!       L2 edge, correct for L1 in bax, noedge using L3
+        ba_noedge_x=bax/(lj1*lj2) !must do in this order
+        bax=bax/lj1 !or else bax gets corrected twice
+      endif
+      if(e.ge.el(n).and.e.lt.ek(n)) then
+!       L1 edge, bax is correct, noedge using L2
+        ba_noedge_x=bax/lj1
+      endif
+
 c----------------------------------------------------------------+
 c     calculate coherent and incoherent x-section                |
 c----------------------------------------------------------------+
  89   do 90 i=0,3
-         if (e.eq.1.) then
-            csum=coh(i,n)*1.
-         else
-            csum=coh(i,n)*(log(e))**i
-         endif
+         csum=coh(i,n)*(log(e))**i
          chs=chs+csum
  90   continue
       bcox=exp(chs)
       do 500 i=0,3
-         if (e.eq.1.) then
-            cisum=cih(i,n)*1.
-         else
-            cisum=cih(i,n)*(log(e))**i
-         endif
+         cisum=cih(i,n)*(log(e))**i
          cis=cis+cisum
  500  continue
       binx=exp(cis)
@@ -2178,6 +2162,7 @@ c----------------------------------------------------------------+
          xsec(11)=bto_noedge_x/cf(n)
          goto 10000
       endif
+      xsec(1)=bax
       xsec(2)=bcox
       xsec(3)=binx
       xsec(4)=btox

@@ -9,7 +9,7 @@ c******************************************************************************
 c******************************************************************************
 
       integer type_pos
-      character filename*FILENAME_LEN, file_type*2
+      character filename*(*), file_type*2
       character string*FILENAME_LEN
 
       string=filename
