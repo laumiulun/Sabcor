@@ -9,8 +9,8 @@ def get_args():
     parser.add_argument('-i', action='store_true')
     # parser.add_argument('-a', action='store_true')
     parser.add_argument('file',type=str)
-    parser.add_argument('output_file',type=str)
-    parser.add_argument('sabcor_inp_file',type=str)
+    # parser.add_argument('output_file',type=str)
+    parser.add_argument('sabcor_inp_file',nargs='?',type=str,default='sab.inp')
 
     args = parser.parse_args()
 
@@ -26,6 +26,7 @@ def check_executable():
     if exists == False:
         subprocess.run(['make'])
 
+    return excut_paths
 def if_params(full_params,params_name,params):
     if params[0] == params_name:
         full_params[params_name] = params[1]
@@ -69,7 +70,7 @@ def read_sab(file):
     checkParams(params,'FLUOR',0)
     return params
 
-def move_sab(params):
+def write_sab(params):
     """
     Move SAB input file
     """
@@ -82,14 +83,29 @@ def move_sab(params):
         f.write('EDGE ' + str(params['EDGE']) + '\n')
         f.write('FLUOR ' + str(params['FLUOR']) + '\n')
 
+def call_executable(excut_paths,sac_file):
+    # Call the subprocess
+    subprocess.run([excut_paths,str(sac_file)])
+
 
 def main():
-    check_executable()
-    # args = get_args()
-    params = read_sab('test/sab.inp')
-    move_sab(params)
+    """
+    To do
 
+    1.  Need to strip the header
+    2.  Unwind the K
+    """
+    excut_paths = check_executable()
+    args = get_args()
 
+    data_file = args.file
+    sabcor_inp = args.sabcor_inp_file
+    print(data_file)
+    print(sabcor_inp)
+    params = read_sab(sabcor_inp)
+    # print(params)
+    write_sab(params)
+    call_executable(excut_paths,data_file)
 
 if __name__ == '__main__':
     main()
