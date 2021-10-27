@@ -6,7 +6,7 @@ import shutil
 def get_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', action='store_true')
+    # parser.add_argument('-i', action='store_true')
     # parser.add_argument('-a', action='store_true')
     parser.add_argument('file',type=str)
     # parser.add_argument('output_file',type=str)
