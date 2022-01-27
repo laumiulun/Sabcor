@@ -16,11 +16,15 @@ def get_args():
 
     return args
 
-def check_executable():
+def check_executable(paths=None):
     """
     Check if executable exists
     """
-    excut_paths = pathlib.Path.cwd() / 'bin/sabcor'
+
+    if paths == None:
+        excut_paths = pathlib.Path.cwd() / 'bin/sabcor'
+    else:
+        excut_paths = paths
     exists = excut_paths.is_file()
     # Compile sabcor
     if exists == False:
@@ -70,12 +74,16 @@ def read_sab(file):
     checkParams(params,'FLUOR',0)
     return params
 
-def write_sab(params):
+def write_sab(params,paths=None):
     """
     Move SAB input file
     """
     # Write the file
-    with open('sab_test.inp', 'w', encoding='utf-8') as f:
+    if paths == None:
+        paths = pathlib.Path.cwd() / 'sab.inp'
+
+    print(paths)
+    with open(paths, 'w', encoding='utf-8') as f:
         f.write('PHI ' + str(params['PHI']) + '\n')
         f.write('VOLUME ' + str(params['VOLUME']) + '\n')
         f.write('THICKNESS ' + str(params['THICKNESS']) + '\n')
