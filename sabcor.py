@@ -1,8 +1,12 @@
 # sabcor Wrapper files
 import pathlib
+import os
 import argparse
 import subprocess
 import shutil
+import re
+import numpy as np
+
 def get_args():
 
     parser = argparse.ArgumentParser()
@@ -95,13 +99,40 @@ def call_executable(excut_paths,sac_file):
     # Call the subprocess
     subprocess.run([excut_paths,str(sac_file)])
 
+def calculate_header(file_loc,return_lines=False):
+    i = 0
+    with open(file_loc) as file:
+        for line in file:
+            # print(line)
+            if line.rstrip()[0] == "#":
+                i = i + 1
+    with open(file_loc) as file:
+        data_lines = file.readlines()
+
+    if return_lines:
+        return i,data_lines
+    else:
+        return i
+
+def edited_final_header(file_input):
+    post_sabcor_file = os.path.splitext(file_input)
+    file_sac_input = post_sabcor_file[0] + "_sac" + post_sabcor_file[1]
+
+
+    header_before = calculate_header(file_input)
+    header_after,data_lines = calculate_header(file_sac_input,return_lines=True)
+    diff_line = np.arange(header_before,header_after)
+
+    with open(file_sac_input,'w') as outfile:
+        for pos,line in enumerate(data_lines):
+            if pos not in diff_line:
+                outfile.write(line)
 
 def main():
     """
     To do
 
-    1.  Need to strip the header
-    2.  Unwind the K
+    1.  Unwind the K
     """
     excut_paths = check_executable()
     args = get_args()
@@ -114,6 +145,6 @@ def main():
     # print(params)
     write_sab(params)
     call_executable(excut_paths,data_file)
-
+    edited_final_header(data_file)
 if __name__ == '__main__':
     main()
