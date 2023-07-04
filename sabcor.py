@@ -8,6 +8,11 @@ import re
 import numpy as np
 
 def get_args():
+    """Command line args for sabcor
+
+    Returns:
+        args : args for sabcor
+    """
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('-i', action='store_true')
@@ -21,8 +26,13 @@ def get_args():
     return args
 
 def check_executable(paths=None):
-    """
-    Check if executable exists
+    """Check if the sabcor executable exists
+
+    Args:
+        paths (str, optional): Path locations for sabcor. Defaults to None.
+
+    Returns:
+       str: excutable path for sabcor
     """
 
     if paths == None:
@@ -35,7 +45,18 @@ def check_executable(paths=None):
         subprocess.run(['make'])
 
     return excut_paths
+
 def if_params(full_params,params_name,params):
+    """Check if the params is in the sabcor input file
+
+    Args:
+        full_params (_type_): _description_
+        params_name (_type_): _description_
+        params (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     if params[0] == params_name:
         full_params[params_name] = params[1]
 
@@ -45,7 +66,16 @@ def checkParams(params,params_name,default):
     if params[params_name] == default:
         print('Missing ' + params_name + ' !')
         exit()
+
 def read_sab(file):
+    """Read sabcor input file
+
+    Args:
+        file (str): file name for sabcor input file
+
+    Returns:
+        dicts : dict of params for sabcor input file
+    """
     full_sab_path = pathlib.Path.cwd() / file
 
     params = {
@@ -79,8 +109,14 @@ def read_sab(file):
     return params
 
 def write_sab(params,paths=None):
-    """
-    Move SAB input file
+    """Write sabc.inp file
+
+    Sabcor params file contains the require parameters:
+    PHI, VOLUME, THICKNESS, FORMULA, EDGE, FLUOR
+
+    Args:
+        params (dicts): params for sabcor input file
+        paths (str, optional): file path for sabcor.inp. Defaults to None.
     """
     # Write the file
     if paths == None:
