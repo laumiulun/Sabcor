@@ -118,9 +118,11 @@ def edited_final_header(file_input):
     post_sabcor_file = os.path.splitext(file_input)
     file_sac_input = post_sabcor_file[0] + "_sac" + post_sabcor_file[1]
 
+    # print(post_sabcor_file)
 
     header_before = calculate_header(file_input)
     header_after,data_lines = calculate_header(file_sac_input,return_lines=True)
+    # print(header_after)
     diff_line = np.arange(header_before,header_after)
 
     with open(file_sac_input,'w') as outfile:
@@ -128,23 +130,55 @@ def edited_final_header(file_input):
             if pos not in diff_line:
                 outfile.write(line)
 
-def main():
-    """
-    To do
+def calculate_dataline(dataline: str):
+    """Helper functions to convert the dataline and calcualte the unwind value
 
-    1.  Unwind the K
+    Args:
+        dataline (str): str with the data line
+
+    Returns:
+        str: str with the unwind value
     """
+    data_arr = re.split("\s+",dataline.strip())
+
+    data_k = float(data_arr[0])
+    data_kchi = float(data_arr[1])
+    data_chi = data_kchi / data_k
+
+    return f'  {data_k:.6e}   {data_chi:.6e}\n'
+
+def unwind_K(file_input):
+    """
+    Unwind the k part from the post sabcor file
+
+    After running sabcor, the data will become k, k*chi, we need to divided the k*chi by k to get the chi by itself.
+
+    Args:
+        file_input (str): file name of the input file
+    """
+    post_sabcor_file = os.path.splitext(file_input)
+    file_sac_input = post_sabcor_file[0] + "_sac" + post_sabcor_file[1]
+
+    header_after,data_lines = calculate_header(file_sac_input,return_lines=True)
+
+    for i in range(header_after,len(data_lines)):
+        data_lines[i] = calculate_dataline(data_lines[i])
+
+    with open(file_sac_input,'w') as outfile:
+        for line in data_lines:
+            outfile.write(line)
+
+def main():
     excut_paths = check_executable()
     args = get_args()
 
     data_file = args.file
     sabcor_inp = args.sabcor_inp_file
-    print(data_file)
-    print(sabcor_inp)
+
     params = read_sab(sabcor_inp)
-    # print(params)
     write_sab(params)
     call_executable(excut_paths,data_file)
     edited_final_header(data_file)
+    unwind_K(data_file)
 if __name__ == '__main__':
     main()
