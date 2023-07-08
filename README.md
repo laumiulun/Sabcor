@@ -47,3 +47,25 @@ The outputs should be
     writing out file example_sac.dat
     [chbooth@hahn stand_alone]$
     ---------------------
+
+## Sabcor Inp file
+
+The following is the format for sabcor input file `sab.inp`:
+
+    THICKNESS:  sample thickness (angstroms)
+    PHI:        angle of sample w.r.t. beam (degrees)
+    THETA:      (optional) angle of sample w.r.t. fluorescence (degrees)
+    VOLUME:    volume occupied by a formula unit (angstroms^3)
+    ABC:       a b c lattice parameters (angstroms)
+    FORMULA:    chemical formula (eg. YBa2Cu3O7)
+    EDGE:       the edge atom and edge type (eg. Kr LIII)
+    CONVERSION: (optional) use if the edge is from a substituted atom in the material.
+
+Example `sab.inp`:
+
+    PHI 49.4
+    VOLUME 47.22
+    THICKNESS 46000
+    FORMULA Cu
+    EDGE Cu K
+    FLUOR 8047
