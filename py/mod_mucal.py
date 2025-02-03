@@ -296,15 +296,12 @@ def mucal(mane, z, en, elements, erf=False, unit=" "):
         am_ = data.get("am", [0,0,0,0])
         an_ = data.get("an", [0,0,0,0])
 
-        # Because the Fortran code references lj1, lj2 as real scalars,
-        # you need to decide how to store them. For demonstration, let's assume:
         lj1 = data.get("lj1", 1.0)  # or from some global variable
         lj2 = data.get("lj2", 1.0)
         # For L3, the code references lj3(n). We'll read that from data:
         lj3_ = data.get("lj3", 1.0)
 
         # We’ll track sum_ for “above” the edge and sumbelow for “below” the edge.
-        # The Fortran code uses different arrays for the “below” portion in some edges.
         if e >= ek_:
             # 70 => a K edge
             for i in range(4):
@@ -336,7 +333,6 @@ def mucal(mane, z, en, elements, erf=False, unit=" "):
                 sumbelow += an_[i] * (math.log(e)**i)
 
         # In Fortran, there's a special block 79 for Z<=29 => "WARNING: McMaster uses L1 edge..."
-        # We'll mimic that:
         if n <= 29 and not (e >= ek_):
             # If we are in an L or M edge for Z<=29
             er = 5
@@ -393,8 +389,6 @@ def mucal(mane, z, en, elements, erf=False, unit=" "):
             xsec[3]  = btox
             xsec[10] = bto_noedge_x
 
-        # Fortran lines 10000 / 20000 (stuff xsec(5..10)):
-        # xsec(5)=cf(n), xsec(6)=btox*den(n)/cf(n), xsec(7)=atwt(n), xsec(8)=den(n)
         # if(n>=27) xsec(9)=lj2, xsec(10)=lj3(n)
         den_ = data.get("den", 1.0)
         atwt_ = data.get("atwt", 0.0)
