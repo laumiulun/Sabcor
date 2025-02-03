@@ -3,19 +3,19 @@
 Self Adsoprtions code from [http://lise.lbl.gov/RSXAP/](http://lise.lbl.gov/RSXAP/).
 
 ## Requirements
-The only requirement is any version of gfortran. The version that was tested version
-9.30. To know what version of gfortran:
+The only requirement is any version of python. The version that was tested version 
+3.12.2. To know what version of python:
 
-    gfortran --version
+    python --version
 
 ## Compile
-To compile sabcor, type `make` and it should compile the object files in `obj/` and
-executable in `bin/`
+To compile and run sabcor, simply change into the 'py' directory type 
+`python sabcor.py [file.dat]` and it will execute sabcor with the resulting files in the 'py' directory.
 
 ## Test
 To run a simple test, type:
 
-    sabcor example.dat
+    python sabcor.py example.dat
 
 this looks for a sab.inp in the current directory, but one can also specify a input file by
 
@@ -34,18 +34,17 @@ this looks for a sab.inp in the current directory, but one can also specify a in
 The outputs should be
     The output onto the screen should look like:
     ---------------------
-    [chbooth@hahn stand_alone]$ sabcor example.dat
-     Welcome to SAB_COR 1.05.
+    $ python sabcor.py example.dat
+     Welcome to SAB_COR 1.07.
 
     Outputting self-absorption correction to sab_cor.dat
 
      Self-Absorption correction statistics:
 
-    info depth at 5 inv ang:                   24885.0 Angstroms
-    correction chi_true/chi_exp at 5 inv ang:   1.93
+    info depth at 5 inv ang:                   99540.1 Angstroms
+    correction chi_true/chi_exp at 5 inv ang:   1.19
 
     writing out file example_sac.dat
-    [chbooth@hahn stand_alone]$
     ---------------------
 
 ## Sabcor Inp file
