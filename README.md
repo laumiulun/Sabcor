@@ -21,6 +21,7 @@ this looks for a sab.inp in the current directory, but one can also specify a in
 
     sabcor <data_file> <sabcor_input>
 
+
 ## Sab.inp format
 
     PHI 49.4
@@ -68,3 +69,26 @@ Example `sab.inp`:
     FORMULA Cu
     EDGE Cu K
     FLUOR 8047
+
+
+## Comparing Fortran and Python Results
+
+To compare the results of the Fortran and Python implementations, run the following script:
+
+```bash
+python py/testing/generate_comparison.py <FORTRAN_example_sac.dat> <PYTHON_example_sac.dat>
+```
+
+This script will:
+- Parse the Fortran and Python output data from the .dat files.
+- Convert the parsed data into CSV format for easier processing.
+- Generate an overlay plot comparing the results, saving it as comparison_plot.png
+
+By default, the script assumes that the data files are formatted with the following names:
+- FORTRAN_example_sac.dat
+- PYTHON_example_sac.dat
+
+However, you can specify different input data files by passing their names as arguments:
+```bash
+python py/testing/generate_comparison.py <fortran_result_data.dat> <python_result_data.dat>
+```
