@@ -21,6 +21,20 @@ this looks for a sab.inp in the current directory, but one can also specify a in
 
     sabcor <data_file> <sabcor_input>
 
+## Sabcor Module
+The Sabcor module can be imported into a project by calling:
+
+    from sabcor import Sabcor
+
+Once the module has been imported, you can instantiate a Sabcor object by passing in the data file and input files as parameters:
+
+    sabcor_processor = Sabcor("example.dat", "sab.inp")
+
+You can then call the process() function which will run the Sabcor program and place resulting files in working director.
+
+    output_filename = sabcor_processor.process()
+
+
 
 ## Sab.inp format
 
