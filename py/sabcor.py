@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from exafs import MAX_NX, MAX_TIT, VERSION
 from aexfile_in import aexfile_in
 from aexfile_out import aexfile_out
@@ -10,88 +10,117 @@ from read_inp import readinp
 from file_ascii import file_ascii
 from elements_data import elements
 
-def main():
-    print(f'Welcome to {VERSION}.')
 
-    # Check command-line arguments
-    if len(sys.argv) < 2:
-        print("Usage: sabcor <datafile> [inputfile]")
-        sys.exit(1)
+class Sabcor:
+    def __init__(self, datafile: str, inputfile: str = "sab.inp"):
+        """
+        Initialize the Sabcor processing class.
 
-    # Get the data file and input file
-    in_datafile = sys.argv[1]
-    inp_filename = sys.argv[2] if len(sys.argv) > 2 else "sab.inp"
+        :param datafile: Path to the input data file.
+        :param inputfile: Path to the input parameters file (default: 'sab.inp').
+        """
+        self.datafile = datafile
+        self.inputfile = inputfile
+        self.params = {}
+        self.k = None
+        self.kchi_r = None
+        self.kchi_i = None
+        self.dummy = None
+        self.nf = None
+        self.nx = None
+        self.xi = None
+        self.dx = None
+        self.title = None
+        self.ntit = None
+        self.format_ascii = None
 
-    # Verify that the data file exists
-    if not os.path.isfile(in_datafile):
-        print(f'ERROR: The data file "{in_datafile}" does not exist.')
-        sys.exit(1)
+    def validate_files(self):
+        """Ensure the required input files exist before processing."""
+        if not os.path.isfile(self.datafile):
+            raise FileNotFoundError(f'ERROR: The data file "{self.datafile}" does not exist.')
 
-    # Verify that the input file exists
-    if not os.path.isfile(inp_filename):
-        print(f'ERROR: The input file "{inp_filename}" does not exist.')
-        sys.exit(1)
+        if not os.path.isfile(self.inputfile):
+            raise FileNotFoundError(f'ERROR: The input file "{self.inputfile}" does not exist.')
 
-    ierr = 0
+    def read_input_file(self):
+        """Read the input file parameters."""
+        self.params = readinp(self.inputfile)
 
-    # Read the input file
-    params = readinp(inp_filename)
-    d = params['d']
-    phi = params['phi']
-    theta = params['theta']
-    formvol = params['formvol']
-    formula = params['formula']
-    edge = params['edge']
-    fluor_energy = params['fluor_energy']
-    concentration = params['concentration']
-    if ierr > 0:
-        print(f'ERROR: sab_cor reports error from readinp. ierr={ierr}')
-        sys.exit(1)
+    def read_data_file(self):
+        """Determine the format and read the data file."""
+        self.format_ascii = file_ascii(self.datafile)
 
-    # Determine the file format of the data file
-    format_ascii = file_ascii(in_datafile)
+        if self.format_ascii:
+            ierr, self.k, self.kchi_r, self.kchi_i, self.dummy, self.nf, self.nx, self.xi, self.dx, self.title, self.ntit = aexfile_in(self.datafile)
+        else:
+            ierr, self.k, self.kchi_r, self.kchi_i, self.dummy, self.nf, self.nx, self.xi, self.dx, self.title, self.ntit = exfile_in(self.datafile)
 
-    # Read the data file
-    if format_ascii:
-        ierr, x, f1, f2, f3, nf, nx, xi, dx, title, ntit = aexfile_in(in_datafile)
-    else:
-        ierr, x, f1, f2, f3, nf, nx, xi, dx, title, ntit = exfile_in(in_datafile)
+        if ierr != 0:
+            raise RuntimeError(f'Error reading input file {self.datafile}')
 
-    if ierr != 0:
-        print(f'Error reading input file {in_datafile}')
-        sys.exit(1)
+    def process_correction(self):
+        """Perform the fluorescence correction."""
+        d = self.params['d']
+        phi = self.params['phi']
+        theta = self.params['theta']
+        formvol = self.params['formvol']
+        formula = self.params['formula']
+        edge = self.params['edge']
+        fluor_energy = self.params['fluor_energy']
+        concentration = self.params['concentration']
 
-    # Map variables
-    k = x
-    kchi_r = f1
-    kchi_i = f2
-    dummy = f3
+        self.kchi_r, title_string = fluor_corr(
+            self.k, self.kchi_r, self.kchi_i, self.nf, self.nx, self.title, self.ntit,
+            d, phi, theta, formvol, formula, edge, fluor_energy,
+            concentration, 'a', ' ', elements
+        )
 
-    # Construct the output filename
-    idot = in_datafile.rfind('.')
-    if idot == -1:
-        out_datafile = in_datafile + '_sac'
-    else:
-        out_datafile = in_datafile[:idot] + '_sac' + in_datafile[idot:]
+        return title_string
 
-    # Perform the correction
-    kchi_r, title_string = fluor_corr(k, kchi_r, kchi_i, nf, nx, title, ntit,
-           d, phi, theta, formvol, formula, edge, fluor_energy,
-           concentration, 'a', ' ', elements)
+    def write_output_file(self):
+        """Generate and save the output file."""
+        idot = self.datafile.rfind('.')
+        out_datafile = self.datafile[:idot] + '_sac' + self.datafile[idot:] if idot != -1 else self.datafile + '_sac'
+
+        print(f'Writing output file {out_datafile[:62]}')
+
+        if self.format_ascii:
+            ierr = aexfile_out(out_datafile, self.k, self.kchi_r, self.kchi_i, self.dummy,
+                               self.nf, 1, self.nx, self.xi, self.dx, self.title, self.ntit, 'ks', "")
+        else:
+            ierr = exfile_out(out_datafile, self.k, self.kchi_r, self.kchi_i, self.dummy,
+                              self.nf, 1, self.nx, self.xi, self.dx, self.title, self.ntit)
+
+        if ierr != 0:
+            raise RuntimeError(f'Error writing output file {out_datafile}')
+
+        return out_datafile
+
+    def process(self):
+        """Complete processing pipeline from reading input to writing output."""
+        print(f'Processing {self.datafile} using Sabcor {VERSION}')
+        self.validate_files()
+        self.read_input_file()
+        self.read_data_file()
+        self.process_correction()
+        output_file = self.write_output_file()
+        print(f'Processing complete. Output saved to {output_file}')
+        return output_file
 
 
-    # Write the output file
-    print(f'writing out file {out_datafile[:62]}')
-    if format_ascii:
-        ierr = aexfile_out(out_datafile, k, kchi_r, kchi_i, dummy,
-                           nf, 1, nx, xi, dx, title, ntit, 'ks', title_string)
-    else:
-        ierr = exfile_out(out_datafile, k, kchi_r, kchi_i, dummy,
-                          nf, 1, nx, xi, dx, title, ntit)
-
-    if ierr != 0:
-        print(f'Error writing output file {out_datafile}')
-        sys.exit(1)
-
+# COMMAND-LINE SUPPORT
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 2:
+        print(f"Usage: python {sys.argv[0]} <datafile> [inputfile]")
+        sys.exit(1)
+
+    datafile = sys.argv[1]
+    inputfile = sys.argv[2] if len(sys.argv) > 2 else "sab.inp"
+
+    try:
+        sabcor_processor = Sabcor(datafile, inputfile)
+        output_filename = sabcor_processor.process()
+        print(f"Output file generated: {output_filename}")
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
